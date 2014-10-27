@@ -9,8 +9,8 @@
  */
 angular.module('chartExampleApp')
 .controller('MainCtrl',
-	['$scope',
-		function ($scope) {
+	['$scope', '$modal',
+		function ($scope, $modal) {
 
 			// チャート全体の幅
 			var _chartWidth = 1500;
@@ -73,9 +73,15 @@ angular.module('chartExampleApp')
 
 			// 描画モード
 			$scope.drawMode = false;
+			
+			// Drag & Drop モード
+			$scope.ddMode = false;
 
-			// 描画開始セル座標
-			$scope.selectStartItem = {
+			// 描画中のセル情報
+			$scope.drawingCellItem = null;
+			
+			// Drag & Drop 開始セル情報
+			$scope.ddStartItem = {
 				'x': null,
 				'y': null
 			};
@@ -83,27 +89,53 @@ angular.module('chartExampleApp')
 			// 予約情報
 			$scope.reservationItems = [];
 
+			/**
+			 * 予約情報の選択を開始します。
+			 *
+			 * @param event mouse-downイベント
+			 *
+			 */
 			$scope.startSelect = function (event) {
 				console.log('startSelect');
-				// console.log('offsetX[' + event.offsetX + '] offsetY[' + event.offsetY + ']');
 				$scope.drawMode = true;
-				$scope.drawCell(event.offsetX, event.offsetY, $scope.selectStartItem);
+				$scope.drawingCellItem = $scope.createCellItem(event.offsetX, event.offsetY);
 			};
 
+			/**
+			 * 予約情報の選択を終了します。
+			 *
+			 * @param event mouse-upイベント
+			 *
+			 */
 			$scope.endSelect = function(event) {
 				console.log('endSelect');
-				//console.log('offsetX[' + event.offsetX + '] offsetY[' + event.offsetY + ']');
-				$scope.drawMode = false;
-				// alert('x[' + $scope.selectStartItem.x + '] y[' + $scope.selectStartItem.y + ']');
-				$scope.drawCell(event.offsetX, event.offsetY, $scope.selectStartItem);
+				
+				if ($scope.drawMode) {
+					$scope.drawMode = false;
+					
+					$modal.open({
+						templateUrl: 'views/reservation-dialog.html'
+					});
+					
+				}
+				
+				if ($scope.ddMode) {
+					$scope.ddMode = false;
+				}
+
 			};
 
 			// TODO メソッド名はリファクタリング対象
 			$scope.over = function(event) {
 				console.log('over');
-				//console.log('offsetX[' + event.offsetX + '] offsetY[' + event.offsetY + ']');
-				if ( ! $scope.drawMode) { return; }
-				$scope.drawCell(event.offsetX, event.offsetY, $scope.selectStartItem);
+				if ($scope.drawMode) {
+					$scope.updateCellItem($scope.drawingCellItem, event.offsetX, event.offsetY);
+				}
+				
+				if ($scope.ddMode) {
+					$scope.ddUpdateCellItem($scope.drawingCellItem, event.offsetX, event.offsetY);
+				}
+				
 			};
 
 			// TODO メソッド名はリファクタリング対象
@@ -117,32 +149,99 @@ angular.module('chartExampleApp')
 				//console.log('leave');
 				//console.log('offsetX[' + event.offsetX + '] offsetY[' + event.offsetY + ']');
 			};
+			
+			$scope.reservationMouseDown = function(event, cellItem) {
+				console.log('reservationMouseDown');
+				$scope.ddMode = true;
+				$scope.ddStartItem.x = $scope.getDrawRectX(event.offsetX);
+				$scope.ddStartItem.y = $scope.getDrawRectY(event.offsetY);
+				console.log('$scope.ddStartItem.x[' + $scope.ddStartItem.x +
+							']$scope.ddStartItem.y[' + $scope.ddStartItem.y +
+							']');
+				$scope.drawingCellItem = cellItem;
+			};
 
-			$scope.drawCell = function(offsetX, offsetY, saveItem) {
-				if ( ! $scope.drawMode) { return; }
-				var tableWidth = 0;	// TODO 左に表示する卓情報の幅
-				var absoluteX = offsetX - tableWidth;
-				var absoluteY = offsetY - $scope.headerHeight;
-
-				var drawRectX = offsetX == 0 ? 0 : Math.floor(offsetX / $scope.minuteWidth) * $scope.minuteWidth;
-				var drawRectY = absoluteY == 0 ? 0 : Math.floor(absoluteY / $scope.reservationHeight) * $scope.reservationHeight + $scope.headerHeight;
-				var drawRectWidth = /*drawRectX + */$scope.minuteWidth;
-				var drawRectHeight = drawRectY + $scope.reservationHeight;
-
-				saveItem.x = drawRectX;
-				saveItem.y = drawRectY;
-
+			/**
+			 * 新しいセル情報を生成します。
+			 * 
+			 * @param offsetX イベント発生時のX座標
+			 *
+			 * @param offsetY イベント発生時のY座標
+			 *
+			 */
+			$scope.createCellItem = function(offsetX, offsetY) {
+				var drawRectX = $scope.getDrawRectX(offsetX);
+				var drawRectY = $scope.getDrawRectY(offsetY);
+				var drawRectWidth = $scope.minuteWidth;
+				var drawRectHeight = $scope.reservationHeight;
+				
 				console.log('drawRextX[' + drawRectX + '] drawRectY[' + drawRectY + '] drawRectWidth[' + drawRectWidth + '] drawRectHeight[' + drawRectHeight + ']');
 				// TODO 何故かoffsetYはヘッダぶんがプラスされている、おそらく左側に卓情報を表示したい場合それもプラスされるはず
-				$scope.reservationItems.push({
+				
+				var newCellItem = {
 					'x': drawRectX,
 					'y': drawRectY,
 					'width': drawRectWidth,
 					'height': drawRectHeight,
 					'fill': 'pink',
 					'opacity': 0.9
-				});
-				// TODO reservationItemsとng-repeatで配列にぶち込む？
+				};
+				
+				$scope.reservationItems.push(newCellItem);
+				
+				return newCellItem;
+			};
+			
+			/**
+			 * セル情報を更新します。
+			 *
+			 * @param drawingCellItem 描画中のセル情報
+			 *
+			 * @param offsetX イベント発生時のX座標
+			 *
+			 * @param offsetY イベント発生時のY座標
+			 *
+			 */
+			$scope.updateCellItem = function(drawingCellItem, offsetX, offsetY) {
+				// TODO 左にひっぱった場合の対応が未実装
+				
+				var newRectWidth = ($scope.getDrawRectX(offsetX) + $scope.minuteWidth) - drawingCellItem.x;
+				var newRectHeight = ($scope.getDrawRectY(offsetY) + $scope.reservationHeight) - drawingCellItem.y;
+				drawingCellItem.width = newRectWidth;
+				drawingCellItem.height = newRectHeight;
+
+			};
+			
+			/**
+			 * Drag & Drop 中のセル情報を更新します。
+			 *
+			 * @param targetCellItem Drag & Drop中のセル情報
+			 *
+			 * @param offsetX イベント発生時のX座標
+			 *
+			 * @param offsetY イベント発生時のY座標
+			 */
+			$scope.ddUpdateCellItem = function(targetCellItem, offsetX, offsetY) {
+				var afterX = $scope.getDrawRectX(offsetX);
+				var afterY = $scope.getDrawRectY(offsetY);
+				var newX = targetCellItem.x - ($scope.ddStartItem.x - afterX);
+				var newY = targetCellItem.y - ($scope.ddStartItem.y - afterY);
+
+				targetCellItem.x = newX;
+				targetCellItem.y = newY;
+				$scope.ddStartItem.x = afterX;
+				$scope.ddStartItem.y = afterY;
+			};
+			
+			$scope.getDrawRectX = function(offsetX) {
+				//var tableWidth = 0;	// TODO 左に表示する卓情報の幅
+				// var absoluteX = offsetX - tableWidth;
+				return offsetX == 0 ? 0 : Math.floor(offsetX / $scope.minuteWidth) * $scope.minuteWidth;
+			};
+			
+			$scope.getDrawRectY = function(offsetY) {
+				var absoluteY = offsetY - $scope.headerHeight;
+				return absoluteY == 0 ? 0 : Math.floor(absoluteY / $scope.reservationHeight) * $scope.reservationHeight + $scope.headerHeight;
 			};
 
 		}

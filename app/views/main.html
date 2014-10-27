@@ -35,39 +35,49 @@
 			</text>
 		</g>
 		<!-- 時間ヘッダ END -->
-
-		<g y="0" ng-mousedown="startSelect($event)"
-		   ng-mouseup="endSelect($event)"
+		
+		<g y="0" 
 		   ng-mousemove="over($event)"
 		   ng-mouseenter="enter($event)"
 		   ng-mouseleave="leave($event)">
 
-			<!-- 卓情報 START -->
-			<g ng-repeat="tableItem in tableItems">
-
-				<line
-					  svg-x1="0" svg-y1="{{tableItem.y}}"
-					  svg-x2="{{chartWidth}}" svg-y2="{{tableItem.y}}"
-					  stroke-width="1" stroke="#000000" />
-
-				<rect svg-x="0" svg-y="{{tableItem.y}}"
-					  width="100%" svg-height="{{reservationHeight}}"
-					  opacity="0.0">
-				</rect>
-
+			<g y="0"
+			   ng-mousedown="startSelect($event)">
+	
+				<!-- 卓情報 START -->
+				<g ng-repeat="tableItem in tableItems">
+	
+					<line
+						  svg-x1="0" svg-y1="{{tableItem.y}}"
+						  svg-x2="{{chartWidth}}" svg-y2="{{tableItem.y}}"
+						  stroke-width="1" stroke="#000000" />
+	
+					<rect svg-x="0" svg-y="{{tableItem.y}}"
+						  width="100%" svg-height="{{reservationHeight}}"
+						  opacity="0.0">
+					</rect>
+	
+				</g>
+				<!-- 卓情報 END -->
+				
 			</g>
-			<!-- 卓情報 END -->
-
+	
 			<!-- 予約情報 START -->
-			<g ng-repeat="reservationItem in reservationItems">
+			<g y="0"
+			   ng-repeat="reservationItem in reservationItems"
+			   ng-mouseup="endSelect($event)">
+			   
 				<rect svg-x="{{reservationItem.x}}" svg-y="{{reservationItem.y}}"
-					  height="30" svg-width="{{reservationItem.width}}"
+					  svg-height="{{reservationItem.height}}" svg-width="{{reservationItem.width}}"
+					  ng-mousedown="reservationMouseDown($event, reservationItem)"
 					  fill="{{reservationItem.fill}}"
 					  opacity="{{reservationItem.opacity}}"
+					  rx="5" ry="5"
 					  stroke-width="1" stroke="#000000" />
+					  
 			</g>
 			<!-- 予約情報 END -->
-
+		
 		</g>
 
 	</svg>
