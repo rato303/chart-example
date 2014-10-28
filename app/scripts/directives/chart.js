@@ -25,8 +25,11 @@ angular.module('chartExampleApp')
 			var _headerHeight = 20;
 			$scope.headerHeight = _headerHeight;
 			
-			// 時間ヘッダの縦位置
+			// ヘッダの縦位置
 			$scope.headerY = 0;
+			
+			// ヘッダの横位置
+			$scope.headerX = 0;
 
 			// 1メモリの幅
 			var _minuteWidth = 15;
@@ -51,7 +54,7 @@ angular.module('chartExampleApp')
 			for (var i = 0; i <= 24; i++) {
 				var label = ('00' + i).slice(-2) + ':00';
 				var x = (i * _minuteWidth * hourSplitCount);
-				var width = ((i + 1) * _minuteWidth * hourSplitCount);
+				var width = _minuteWidth * hourSplitCount;
 				_headerItems.push({
 					'x': x,
 					'width': width,
@@ -64,9 +67,14 @@ angular.module('chartExampleApp')
 			// 卓の数
 			var _tableItems = new Array();
 			for (var i = 0; i < 100; i++) {
+				var y = i * 30 + $scope.headerHeight;
 				_tableItems.push({
-					'y': i * 30 + $scope.headerHeight,
-					'tableNo': i,
+					"y": y,
+					"labelY": y + 12,
+					"takuNinzu": i + '人',
+					"shubetsu": '種別' + i,
+					"takumei": '卓名' + i,
+					"kitsuen": i % 2 == 0 ? true : false
 				});
 			}
 			$scope.tableItems = _tableItems;
@@ -85,6 +93,17 @@ angular.module('chartExampleApp')
 				'x': null,
 				'y': null
 			};
+			
+			// 卓ヘッダ情報
+			$scope.tableCaptionItems = [
+				{"label": "卓人数", "x": 0, "width": 60},
+				{"label": "種別", "x": 60, "width": 60},
+				{"label": "卓名", "x": 120, "width": 60},
+				{"label": "喫煙", "x": 180, "width": 60}
+			];
+			
+			// 卓情報全体の幅
+			$scope.tableCaptionWidth = 240;
 
 			// 予約情報
 			$scope.reservationItems = [];
@@ -165,6 +184,7 @@ angular.module('chartExampleApp')
 				console.log('scroll');
 				console.log('scrollTop[' + event.target.scrollTop + ']scrollLeft[' + event.target.scrollLeft + ']');
 				$scope.headerY = event.target.scrollTop;
+				$scope.headerX = event.target.scrollLeft;
 			};
 
 			/**
@@ -242,7 +262,7 @@ angular.module('chartExampleApp')
 			$scope.getDrawRectX = function(offsetX) {
 				//var tableWidth = 0;	// TODO 左に表示する卓情報の幅
 				// var absoluteX = offsetX - tableWidth;
-				return offsetX == 0 ? 0 : Math.floor(offsetX / $scope.minuteWidth) * $scope.minuteWidth;
+				return offsetX == 0 ? 0 : Math.floor((offsetX - $scope.tableCaptionWidth) / $scope.minuteWidth) * $scope.minuteWidth;
 			};
 			
 			$scope.getDrawRectY = function(offsetY) {
