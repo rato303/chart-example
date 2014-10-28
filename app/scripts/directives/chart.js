@@ -160,6 +160,12 @@ angular.module('chartExampleApp')
 							']');
 				$scope.drawingCellItem = cellItem;
 			};
+			
+			$scope.onscroll = function(event) {
+				console.log('scroll');
+				console.log('scrollTop[' + event.target.scrollTop + ']scrollLeft[' + event.target.scrollLeft + ']');
+				$scope.headerY = event.target.scrollTop;
+			};
 
 			/**
 			 * 新しいセル情報を生成します。
@@ -245,14 +251,13 @@ angular.module('chartExampleApp')
 			};
 					
 	}])
-	.directive('chart', function () {
+	.directive('chart', ['$window', function ($window) {
 		return {
 			templateUrl: 'scripts/directives/chart.html',
 			restrict: 'E',
 			controller: 'ChartCtrl',
 			link: function postLink(scope, element, attrs, ctrls) {
-				
 			}
 		};
 		
-	});
+	}]);

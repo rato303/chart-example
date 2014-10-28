@@ -1,4 +1,4 @@
-<div class="chart-panel panel panel-default">
+<div class="chart-panel panel panel-default" ui-event="{scroll: 'onscroll($event)'}">
 
 	<svg svg-width="{{chartWidth}}" svg-height="{{chartHeight}}">
 
@@ -19,28 +19,28 @@
 				  stroke-dasharray="3 3 3 3 3" />
 		</g>
 		<!-- 背景の波線 END -->
-
-		<!-- 時間ヘッダ START -->
-		<g ng-repeat="headerItem in headerItems">
-			<rect svg-x="{{headerItem.x}}" svg-y="headerY"
-				  svg-width="{{headerItem.width}}"
-				  svg-height="{{headerHeight}}"
-				  fill="#FFFFFF"
-				  style="stroke-width:1; stroke:rgb(0, 0, 0)">
-			</rect>
-			<text svg-x="{{headerItem.labelX}}" svg-y="{{headerLabelY}}"
-				  font-family="Verdana"
-				  font-size="11">
-				  {{headerItem.label}}
-			</text>
-		</g>
-		<!-- 時間ヘッダ END -->
 		
 		<g y="0" 
 		   ng-mousemove="over($event)"
 		   ng-mouseenter="enter($event)"
 		   ng-mouseleave="leave($event)">
-
+	
+			<!-- 予約情報 START -->
+			<g y="0"
+			   ng-repeat="reservationItem in reservationItems"
+			   ng-mouseup="endSelect($event)">
+			   
+				<rect svg-x="{{reservationItem.x}}" svg-y="{{reservationItem.y}}"
+					  svg-height="{{reservationItem.height}}" svg-width="{{reservationItem.width}}"
+					  ng-mousedown="reservationMouseDown($event, reservationItem)"
+					  fill="{{reservationItem.fill}}"
+					  opacity="{{reservationItem.opacity}}"
+					  rx="5" ry="5"
+					  stroke-width="1" stroke="#000000" />
+					  
+			</g>
+			<!-- 予約情報 END -->
+			
 			<g y="0"
 			   ng-mousedown="startSelect($event)">
 	
@@ -61,24 +61,24 @@
 				<!-- 卓情報 END -->
 				
 			</g>
-	
-			<!-- 予約情報 START -->
-			<g y="0"
-			   ng-repeat="reservationItem in reservationItems"
-			   ng-mouseup="endSelect($event)">
-			   
-				<rect svg-x="{{reservationItem.x}}" svg-y="{{reservationItem.y}}"
-					  svg-height="{{reservationItem.height}}" svg-width="{{reservationItem.width}}"
-					  ng-mousedown="reservationMouseDown($event, reservationItem)"
-					  fill="{{reservationItem.fill}}"
-					  opacity="{{reservationItem.opacity}}"
-					  rx="5" ry="5"
-					  stroke-width="1" stroke="#000000" />
-					  
-			</g>
-			<!-- 予約情報 END -->
 		
 		</g>
+		
+		<!-- 時間ヘッダ START -->
+		<g ng-repeat="headerItem in headerItems">
+			<rect svg-x="{{headerItem.x}}" svg-y="{{headerY}}"
+				  svg-width="{{headerItem.width}}"
+				  svg-height="{{headerHeight}}"
+				  fill="#FFFFFF"
+				  style="stroke-width:1; stroke:rgb(0, 0, 0)">
+			</rect>
+			<text svg-x="{{headerItem.labelX}}" svg-y="{{headerY + headerLabelY}}"
+				  font-family="Verdana"
+				  font-size="11">
+				  {{headerItem.label}}
+			</text>
+		</g>
+		<!-- 時間ヘッダ END -->
 
 	</svg>
 
