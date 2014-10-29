@@ -9,14 +9,6 @@
 angular.module('chartExampleApp')
 	.controller('ChartCtrl', ['$scope', '$modal', function ChartCtrl($scope, $modal) {
 
-	  // チャート全体の幅
-    var _chartWidth = 1500;
-		$scope.chartWidth = _chartWidth;
-
-		// チャート全体の高さ
-		var _chartHeigth = 3020;
-		$scope.chartHeight = _chartHeigth;
-
 		// 時間テキストのy軸
 		var _headerLabelY = 14;
 		$scope.headerLabelY = _headerLabelY;
@@ -42,13 +34,6 @@ angular.module('chartExampleApp')
 		// 1予約分の高さ
 		var _reservationHeight = 30;
 		$scope.reservationHeight = _reservationHeight;
-
-		// 波線の数
-		var _lineItems = [];
-		for (var i = 1; i < 100; i++) {	// TODO なんで96じゃんくて100なのか？計算式を求める
-			_lineItems.push({'x': i * _minuteWidth});
-		}
-		$scope.lineItems = _lineItems;
 
 		// 時間の数
 		var _headerItems = [];
@@ -361,8 +346,14 @@ $scope.moge = {};
 			templateUrl: 'scripts/directives/chart/chart.html',
 			restrict: 'E',
 			controller: 'ChartCtrl',
-			link: function postLink() {
-			}
+      scope: {
+        /** チャート全体の幅 */
+        "chartWidth": "=",
+        /** チャート全体の高さ */
+        "chartHeight": "="
+      },
+			link: function postLink(scope) {
+      }
 		};
 
 	}]);
