@@ -1,0 +1,41 @@
+<svg>
+
+  <!-- 時間ヘッダ START -->
+  <g ng-repeat="headerItem in chartModel.headerItems">
+<!-- TODO headerYとheaderHeightなどchartModelを当該htmlに存在させないようにディレクティブのscopeに定義する -->
+    <rect svg-x="{{tableCaptionWidth + headerItem.x}}" svg-y="{{chartModel.headerY}}"
+          svg-width="{{headerItem.width}}"
+          svg-height="{{chartModel.headerHeight}}"
+          fill="#FFFFFF"
+          style="stroke-width:1; stroke:rgb(0, 0, 0)">
+    </rect>
+
+    <text svg-x="{{tableCaptionWidth + headerItem.labelX}}" svg-y="{{chartModel.headerY + chartModel.headerLabelY}}"
+          font-family="Verdana"
+          font-size="11">
+      {{headerItem.label}}
+    </text>
+
+  </g>
+  <!-- 時間ヘッダ END -->
+
+  <!-- 固定情報ヘッダ START -->
+  <g ng-repeat="tableCaptionItem in tableCaptionItems">
+
+    <rect svg-x="{{chartModel.headerX + tableCaptionItem.x}}" svg-y="{{chartModel.headerY}}"
+          svg-width="{{tableCaptionItem.width}}"
+          svg-height="{{chartModel.headerHeight}}"
+          fill="#FFFFFF"
+          style="stroke-width:1; stroke:rgb(0, 0, 0)">
+    </rect>
+
+    <text svg-x="{{chartModel.headerX + tableCaptionItem.x}}" svg-y="{{chartModel.headerY + chartModel.headerLabelY}}"
+          font-family="Verdana"
+          font-size="11">
+      {{tableCaptionItem.label}}
+    </text>
+
+  </g>
+  <!-- 固定情報ヘッダ END -->
+
+</svg>
