@@ -9,8 +9,8 @@
  */
 angular.module('chartExampleApp')
 .controller('MainCtrl',
-	['$scope',
-		function ($scope) {
+	[
+		function () {
 		}
 	]
 );
