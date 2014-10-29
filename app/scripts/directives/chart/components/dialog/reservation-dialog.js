@@ -12,13 +12,13 @@
  */
 angular.module('chartExampleApp')
   .controller('ReservationDialogCtrl',
-  ['$scope', '$modalInstance', 'selectItems',
-    function ($scope, $modalInstance, selectItems) {
+  ['$scope', '$modalInstance', 'dialogModel',
+    function ($scope, $modalInstance, dialogModel) {
 
-      $scope.selectItems = angular.copy(selectItems);
+      $scope.dialogModel = angular.copy(dialogModel);
 
       $scope.ok = function () {
-        $modalInstance.close($scope.selectItems);
+        $modalInstance.close($scope.dialogModel.selectItems);
       };
 
       $scope.cancel = function () {

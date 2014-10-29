@@ -11,7 +11,8 @@
 
 				<label class="control-label">時間帯</label>
 				<div>
-					<input type="text" class="form-control input-sm" />
+					<input type="text" class="form-control input-sm" ng-model="dialogModel.startTime" />
+          <input type="text" class="form-control input-sm" ng-model="dialogModel.endTime" />
 				</div>
 
 			</div>
@@ -48,7 +49,7 @@
         </thead>
 
         <tbody>
-          <tr ng-repeat="selectItem in selectItems">
+          <tr ng-repeat="selectItem in dialogModel.selectItems">
             <td>
               種別{{selectItem.shubetsu}}
             </td>
