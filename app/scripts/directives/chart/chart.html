@@ -1,12 +1,12 @@
 <div class="chart-panel panel panel-default" ui-event="{scroll: 'onscroll($event)'}">
 
-	<svg svg-width="{{tableCaptionWidth + chartWidth}}" svg-height="{{chartHeight}}">
+	<svg svg-width="{{chartModel.tableCaptionWidth + chartWidth}}" svg-height="{{chartHeight}}">
 
     <!-- 背景 START -->
     <chart-background
       chart-width="chartWidth"
       chart-height="chartHeight"
-      table-caption-width="tableCaptionWidth"
+      table-caption-width="chartModel.tableCaptionWidth"
       table-items="tableItems"
       header-items="chartModel.headerItems"
       hour-split-count="chartModel.hourSplitCount">
@@ -22,7 +22,7 @@
 				<rect ng-repeat="tableItem in tableItems"
               ng-mousedown="startSelect($event, tableItem)"
               ng-mousemove="over($event, tableItem)"
-					  svg-x="{{tableCaptionWidth}}" svg-y="{{tableItem.y}}"
+					  svg-x="{{chartModel.tableCaptionWidth}}" svg-y="{{tableItem.y}}"
 					  width="100%" svg-height="{{chartModel.reservationHeight}}"
 					  opacity="0.0">
 				</rect>
@@ -35,7 +35,7 @@
 				<rect ng-repeat="reservationItem in reservationItems"
 				    ng-mouseup="endSelect($event)"
 				    ng-mousedown="reservationMouseDown($event, reservationItem)"
-            svg-x="{{tableCaptionWidth + reservationItem.x}}" svg-y="{{reservationItem.y}}"
+            svg-x="{{chartModel.tableCaptionWidth + reservationItem.x}}" svg-y="{{reservationItem.y}}"
 					  svg-height="{{reservationItem.height}}" svg-width="{{reservationItem.width}}"
 					  fill="{{reservationItem.fill}}"
 					  opacity="{{reservationItem.opacity}}"
@@ -45,13 +45,13 @@
 			<!-- 予約情報 END -->
 
       <!-- 新規追加中予約情報 START -->
-      <rect svg-x="{{tableCaptionWidth + drawingCellItem.x}}" svg-y="{{drawingCellItem.y}}"
-            svg-height="{{drawingCellItem.height}}" svg-width="{{drawingCellItem.width}}"
-            ng-mousedown="reservationMouseDown($event, drawingCellItem)"
+      <rect svg-x="{{chartModel.tableCaptionWidth + chartModel.drawingCellItem.x}}" svg-y="{{chartModel.drawingCellItem.y}}"
+            svg-height="{{chartModel.drawingCellItem.height}}" svg-width="{{chartModel.drawingCellItem.width}}"
+            ng-mousedown="reservationMouseDown($event, chartModel.drawingCellItem)"
             ng-mouseup="endSelect($event)"
             ng-mousemove="drawingCellMove($event)"
-            fill="{{drawingCellItem.fill}}"
-            opacity="{{drawingCellItem.opacity}}"
+            fill="{{chartModel.drawingCellItem.fill}}"
+            opacity="{{chartModel.drawingCellItem.opacity}}"
             rx="5" ry="5"
             stroke-width="1" stroke="#000000" />
       <!-- 新規追加中予約情報 END -->

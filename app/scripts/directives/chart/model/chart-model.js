@@ -2,10 +2,10 @@
 
 /**
  * @ngdoc service
- * @name csmMediaAngularApp.customerInputModel
+ * @name chartExampleApp.chartModel
  * @description
- * # customerInputModel
- * Factory in the csmMediaAngularApp.
+ * # chartModel
+ * Factory in the chartExampleApp.
  */
 angular.module('chartExampleApp')
   .factory('chartModel', function () {
@@ -26,6 +26,26 @@ angular.module('chartExampleApp')
       "reservationHeight": 30,
       /** 時間ヘッダの配列 */
       "headerItems": [],
+      /** 描画モード */
+      "drawMode": false,
+      /** Drag & Drop モード */
+      "ddMode": false,
+      /** 描画中のセル情報 */
+      "drawingCellItem": null,
+      /** Drag & Drop 開始セル情報 */
+      "ddStartItem": {
+        "x": null,
+        "y": null
+      },
+      /** 卓ヘッダ情報 */
+      "tableCaptionItems": [
+        {'label': '卓人数', 'x': 0, 'width': 60},
+        {'label': '種別', 'x': 60, 'width': 60},
+        {'label': '卓名', 'x': 120, 'width': 60},
+        {'label': '喫煙', 'x': 180, 'width': 60}
+      ],
+      /** 卓情報全体の幅 */
+      "tableCaptionWidth": 240,
       /**
        * 時間ヘッダの配列を生成します。
        *
