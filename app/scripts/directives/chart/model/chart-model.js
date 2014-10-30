@@ -9,6 +9,22 @@
  */
 angular.module('chartExampleApp')
   .factory('chartModel', function () {
+
+    var _cellItem = {
+      "x": 0,
+      "y": 0,
+      "height": 0,
+      "width": 0,
+      "fill": '',
+      "opacity": 0.0,
+      "startTime": '',
+      "endTime": '',
+      "takuNinzu": '',
+      "shubetsu": '',
+      "takumei": '',
+      "kitsuen": ''
+    };
+
     return {
       /** 時間テキストのy軸*/
       "headerLabelY": 14,
@@ -18,6 +34,7 @@ angular.module('chartExampleApp')
       "headerY": 0,
       /** ヘッダの横位置 */
       "headerX": 0,
+      // TODO 60をhourSplitCountで割った数をminuteWidthに設定するようにする
       /** 分の最小単位 */
       "minuteWidth": 15,
       /** 1時間の分割量 */
@@ -76,7 +93,7 @@ angular.module('chartExampleApp')
        *
        * @param moge
        *
-       * @returns {number} 仮予約情報の配列
+       * @returns {Array} 仮予約情報の配列
        */
       "createReservationItems": function(event, moge) {
         var startTime = this.drawingCellItem.startTime;
@@ -84,18 +101,29 @@ angular.module('chartExampleApp')
         var newReservationItems = [];
 
         for (var key in moge) {
-          var newReservationItem = moge[key];
-          newReservationItems.push({
-            "startTime": startTime,
-            "endTime": endTime,
-            "y": newReservationItem.y,
-            "takuNinzu": newReservationItem.takuNinzu,
-            "shubetsu": newReservationItem.shubetsu,
-            "takumei": newReservationItem.takumei,
-            "kitsuen": newReservationItem.kitsuen
-          });
+          var tableItem = moge[key];
+          var newReservationItem = angular.copy(_cellItem);
+          newReservationItem.startTime = startTime;
+          newReservationItem.endTime = endTime;
+          newReservationItem.x = this.timeToX(startTime);
+          newReservationItem.y = tableItem.y;
+          newReservationItem.height = this.reservationHeight;
+          newReservationItem.width = this.timeToX(endTime) - newReservationItem.x;
+          newReservationItem.fill = 'green';
+          newReservationItem.opacity = '1.0';
+          newReservationItem.takuNinzu = tableItem.takuNinzu;
+          newReservationItem.shubetsu = tableItem.shubetsu;
+          newReservationItem.takumei = tableItem.takumei;
+          newReservationItem.kitsuen = tableItem.kitsuen;
+          newReservationItems.push(newReservationItem);
         }
         return newReservationItems;
+      },
+      /**
+       * 描画中のセル情報をクリアします。
+       */
+      "clearDrawingCellItem": function () {
+        this.drawingCellItem = angular.copy(_cellItem);
       },
       /**
        * 新しいセル情報を生成します。
@@ -107,20 +135,15 @@ angular.module('chartExampleApp')
        * @returns {Object} 新しいセル情報
        */
       "createCellItem": function(offsetX, offsetY) {
-        var drawRectX = this.getDrawRectX(offsetX);
-        var drawRectY = this.getDrawRectY(offsetY);
-        var drawRectWidth = this.minuteWidth;
-        var drawRectHeight = this.reservationHeight;
 
-        var newCellItem = {
-          'x': drawRectX,
-          'y': drawRectY,
-          'width': drawRectWidth,
-          'height': drawRectHeight,
-          'fill': 'pink',
-          'opacity': 0.9,
-          'startTime': this.getStartTime(offsetX)
-        };
+        var newCellItem = angular.copy(_cellItem);
+        newCellItem.x = this.getDrawRectX(offsetX);
+        newCellItem.y = this.getDrawRectY(offsetY);
+        newCellItem.width = this.minuteWidth;
+        newCellItem.height = this.reservationHeight;
+        newCellItem.fill = 'pink';
+        newCellItem.opacity = '0.9';
+        newCellItem.startTime = this.getStartTime(offsetX);
 
         return newCellItem;
       },
@@ -188,7 +211,7 @@ angular.module('chartExampleApp')
        */
       "getStartTime": function(offsetX) {
         var startX = this.getDrawRectX(offsetX);
-        return this.getTime(startX);
+        return this.xToTime(startX);
       },
       /**
        * 選択終了時刻を取得します。
@@ -199,7 +222,7 @@ angular.module('chartExampleApp')
        */
       "getEndTime": function(offsetX) {
         var endX = this.minuteWidth + this.getDrawRectX(offsetX);
-        return this.getTime(endX);
+        return this.xToTime(endX);
       },
       /**
        * X座標に位置する時刻を取得します。
@@ -208,11 +231,27 @@ angular.module('chartExampleApp')
        *
        * @returns {string}
        */
-      "getTime": function(targetX) {
+      "xToTime": function(targetX) {
         var minuteCount = targetX / this.minuteWidth;
         var hour = Math.floor(minuteCount / this.hourSplitCount);
         var minute = minuteCount % this.hourSplitCount * this.minuteWidth;
         return ('00' + String(hour)).slice(-2) + ':' + ('00' + String(minute)).slice(-2);
+      },
+      /**
+       * 時刻に位置するX座標を取得します。
+       *
+       * @param time X座標を取得する時刻
+       *
+       */
+      "timeToX": function(time) {
+        var timeArr = time.split(":");
+
+        var hour = Number(timeArr[0]);
+        var minute = Number(timeArr[1]);
+
+        minute += this.minuteWidth * this.hourSplitCount * hour;
+
+        return minute;
       }
     };
   });

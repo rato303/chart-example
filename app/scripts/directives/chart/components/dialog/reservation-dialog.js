@@ -18,7 +18,7 @@ angular.module('chartExampleApp')
       $scope.dialogModel = angular.copy(dialogModel);
 
       $scope.ok = function () {
-        $modalInstance.close($scope.dialogModel.selectItems);
+        $modalInstance.close($scope.dialogModel);
       };
 
       $scope.cancel = function () {

@@ -40,6 +40,7 @@ angular.module('chartExampleApp')
           var newReservationItems = $scope.chartModel.createReservationItems(event, $scope.moge);
 
           // TODO createReservationItems内で呼ばれているので呼び出し方を考える
+          // TODO createDialogModelメソッドを作成して、newReservationItemsとstartTime,endTimeを梱包する
           var startTime = $scope.chartModel.drawingCellItem.startTime;
           var endTime = $scope.chartModel.getEndTime(event.offsetX);
 
@@ -59,11 +60,7 @@ angular.module('chartExampleApp')
 
           $scope.modalInstance.result.then(function (dialogModel) {
             console.log('確定');
-            // TODO 関数化
-            for (var i = 0; i < dialogModel.selectItems.length; i++) {
-              // TODO createCellItemのpush先を抽象化
-            }
-
+            $scope.reservationItems = $scope.reservationItems.concat(dialogModel.selectItems);
             $scope.dialogCloseCommonProcess();
           }, function () {
             console.log('キャンセル');
@@ -83,7 +80,7 @@ angular.module('chartExampleApp')
        * ダイアログを閉じる際の共通処理
        */
       $scope.dialogCloseCommonProcess = function() {
-        $scope.chartModel.drawingCellItem = {"x" : 0, "y" : 0, "height": 0, "width" : 0};
+        $scope.chartModel.clearDrawingCellItem();
         $scope.moge = {};
       };
 

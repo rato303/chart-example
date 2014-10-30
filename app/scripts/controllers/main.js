@@ -27,6 +27,8 @@ angular.module('chartExampleApp')
       }
       $scope.tableItems = _tableItems;
 
+      $scope.reservationItems = [];
+
 		}
 	]
 );

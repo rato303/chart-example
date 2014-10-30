@@ -30,24 +30,24 @@
 			</g>
 			<!-- 卓情報 END -->
 
-			<!-- 予約情報 START
+			<!-- 予約情報 START -->
 			<g>
 				<rect ng-repeat="reservationItem in reservationItems"
-				    ng-mouseup="endSelect($event)"
-				    ng-mousedown="reservationMouseDown($event, reservationItem)"
-            svg-x="{{chartModel.tableCaptionWidth + reservationItem.x}}" svg-y="{{reservationItem.y}}"
-					  svg-height="{{reservationItem.height}}" svg-width="{{reservationItem.width}}"
-					  fill="{{reservationItem.fill}}"
-					  opacity="{{reservationItem.opacity}}"
-					  rx="5" ry="5"
-					  stroke-width="1" stroke="#000000" />
-			</g> -->
+              ng-mousedown="reservationMouseDown($event, reservationItem)"
+              ng-mouseup="endSelect($event)"
+              svg-x="{{chartModel.tableCaptionWidth + reservationItem.x}}"
+              svg-y="{{reservationItem.y}}"
+              svg-height="{{reservationItem.height}}"
+              svg-width="{{reservationItem.width}}"
+              fill="{{reservationItem.fill}}"
+              rx="5" ry="5"
+              stroke-width="1" stroke="#000000" />
+			</g>
 			<!-- 予約情報 END -->
 
       <!-- 新規追加中予約情報 START -->
       <rect svg-x="{{chartModel.tableCaptionWidth + chartModel.drawingCellItem.x}}" svg-y="{{chartModel.drawingCellItem.y}}"
             svg-height="{{chartModel.drawingCellItem.height}}" svg-width="{{chartModel.drawingCellItem.width}}"
-            ng-mousedown="reservationMouseDown($event, chartModel.drawingCellItem)"
             ng-mouseup="endSelect($event)"
             ng-mousemove="drawingCellMove($event)"
             fill="{{chartModel.drawingCellItem.fill}}"
