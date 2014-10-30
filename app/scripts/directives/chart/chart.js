@@ -23,7 +23,7 @@ angular.module('chartExampleApp')
         console.log('startSelect');
         $scope.chartModel.drawMode = true;
         $scope.moge[tableItem.$$hashKey] = tableItem;
-        $scope.chartModel.drawingCellItem = $scope.createCellItem(event.offsetX, event.offsetY);
+        $scope.chartModel.drawingCellItem = $scope.chartModel.createCellItem(event.offsetX, event.offsetY);
       };
 
       /**
@@ -37,24 +37,11 @@ angular.module('chartExampleApp')
 
         if ($scope.chartModel.drawMode) {
           $scope.chartModel.drawMode = false;
+          var newReservationItems = $scope.chartModel.createReservationItems(event, $scope.moge);
 
+          // TODO createReservationItems内で呼ばれているので呼び出し方を考える
           var startTime = $scope.chartModel.drawingCellItem.startTime;
-          var endTime = $scope.getEndTime(event.offsetX);
-          // TODO 関数化する
-          var newReservationItems = [];
-
-          for (var key in $scope.moge) {
-            var newReservationItem = $scope.moge[key];
-            newReservationItems.push({
-              "startTime": startTime,
-              "endTime": endTime,
-              "y": newReservationItem.y,
-              "takuNinzu": newReservationItem.takuNinzu,
-              "shubetsu": newReservationItem.shubetsu,
-              "takumei": newReservationItem.takumei,
-              "kitsuen": newReservationItem.kitsuen
-            });
-          }
+          var endTime = $scope.chartModel.getEndTime(event.offsetX);
 
           $scope.modalInstance = $modal.open({
             controller: 'ReservationDialogCtrl',
@@ -75,7 +62,6 @@ angular.module('chartExampleApp')
             // TODO 関数化
             for (var i = 0; i < dialogModel.selectItems.length; i++) {
               // TODO createCellItemのpush先を抽象化
-
             }
 
             $scope.dialogCloseCommonProcess();
@@ -93,6 +79,7 @@ angular.module('chartExampleApp')
       };
 
       /**
+       * TODO chart-model側にリファクタリング
        * ダイアログを閉じる際の共通処理
        */
       $scope.dialogCloseCommonProcess = function() {
@@ -107,24 +94,18 @@ angular.module('chartExampleApp')
         console.log('over');
         if ($scope.chartModel.drawMode) {
           $scope.moge[tableItem.$$hashKey] = tableItem;
-          $scope.updateCellItem($scope.chartModel.drawingCellItem, event.offsetX, event.offsetY);
+          $scope.chartModel.updateCellItem(event.offsetX, event.offsetY);
         }
-        $scope.ddModeProcess(event);
+        $scope.chartModel.ddUpdateCellItem(event.offsetX, event.offsetY);
 
       };
 
       $scope.drawingCellMove = function(event) {
         if ($scope.chartModel.drawMode) {
-          $scope.updateCellItem($scope.chartModel.drawingCellItem, event.offsetX, event.offsetY);
+          $scope.chartModel.updateCellItem(event.offsetX, event.offsetY);
         }
-        $scope.ddModeProcess(event);
+        $scope.chartModel.ddUpdateCellItem(event.offsetX, event.offsetY);
       }
-
-      $scope.ddModeProcess = function(event) {
-        if ($scope.chartModel.ddMode) {
-          $scope.ddUpdateCellItem($scope.chartModel.drawingCellItem, event.offsetX, event.offsetY);
-        }
-      };
 
       // TODO メソッド名はリファクタリング対象
       $scope.enter = function(event) {
@@ -141,8 +122,8 @@ angular.module('chartExampleApp')
       $scope.reservationMouseDown = function(event, cellItem) {
         console.log('reservationMouseDown');
         $scope.chartModel.ddMode = true;
-        $scope.chartModel.ddStartItem.x = $scope.getDrawRectX(event.offsetX);
-        $scope.chartModel.ddStartItem.y = $scope.getDrawRectY(event.offsetY);
+        $scope.chartModel.ddStartItem.x = $scope.chartModel.getDrawRectX(event.offsetX);
+        $scope.chartModel.ddStartItem.y = $scope.chartModel.getDrawRectY(event.offsetY);
         console.log('$scope.chartModel.ddStartItem.x[' + $scope.chartModel.ddStartItem.x +
               ']$scope.chartModel.ddStartItem.y[' + $scope.chartModel.ddStartItem.y +
               ']');
@@ -154,135 +135,6 @@ angular.module('chartExampleApp')
         console.log('scrollTop[' + event.target.scrollTop + ']scrollLeft[' + event.target.scrollLeft + ']');
         $scope.chartModel.headerY = event.target.scrollTop;
         $scope.chartModel.headerX = event.target.scrollLeft;
-      };
-
-      /**
-       * 新しいセル情報を生成します。
-       *
-       * @param offsetX イベント発生時のX座標
-       *
-       * @param offsetY イベント発生時のY座標
-       *
-       */
-      $scope.createCellItem = function(offsetX, offsetY) {
-        var drawRectX = $scope.getDrawRectX(offsetX);
-        var drawRectY = $scope.getDrawRectY(offsetY);
-        var drawRectWidth = $scope.chartModel.minuteWidth;
-        var drawRectHeight = $scope.chartModel.reservationHeight;
-
-        var newCellItem = {
-          'x': drawRectX,
-          'y': drawRectY,
-          'width': drawRectWidth,
-          'height': drawRectHeight,
-          'fill': 'pink',
-          'opacity': 0.9,
-          'startTime': $scope.getStartTime(offsetX)
-        };
-
-        return newCellItem;
-      };
-
-      /**
-       * セル情報を更新します。
-       *
-       * @param drawingCellItem 描画中のセル情報
-       *
-       * @param offsetX イベント発生時のX座標
-       *
-       * @param offsetY イベント発生時のY座標
-       *
-       */
-      $scope.updateCellItem = function(drawingCellItem, offsetX, offsetY) {
-        // TODO 左にひっぱった場合の対応が未実装
-
-        var newRectWidth = ($scope.getDrawRectX(offsetX) + $scope.chartModel.minuteWidth) - drawingCellItem.x;
-        var newRectHeight = ($scope.getDrawRectY(offsetY) + $scope.chartModel.reservationHeight) - drawingCellItem.y;
-        drawingCellItem.width = newRectWidth;
-        drawingCellItem.height = newRectHeight;
-
-      };
-
-      /**
-       * Drag & Drop 中のセル情報を更新します。
-       *
-       * @param targetCellItem Drag & Drop中のセル情報
-       *
-       * @param offsetX イベント発生時のX座標
-       *
-       * @param offsetY イベント発生時のY座標
-       */
-      $scope.ddUpdateCellItem = function(targetCellItem, offsetX, offsetY) {
-        var afterX = $scope.getDrawRectX(offsetX);
-        var afterY = $scope.getDrawRectY(offsetY);
-        var newX = targetCellItem.x - ($scope.chartModel.ddStartItem.x - afterX);
-        var newY = targetCellItem.y - ($scope.chartModel.ddStartItem.y - afterY);
-
-        targetCellItem.x = newX;
-        targetCellItem.y = newY;
-        $scope.chartModel.ddStartItem.x = afterX;
-        $scope.chartModel.ddStartItem.y = afterY;
-      };
-
-      /**
-       * 描画を開始するX座標を取得します。
-       *
-       * @param offsetX イベント発生時のX座標
-       *
-       * @returns {number}
-       */
-      $scope.getDrawRectX = function(offsetX) {
-        return offsetX === 0 ? 0 : Math.floor((offsetX - $scope.chartModel.tableCaptionWidth) / $scope.chartModel.minuteWidth) * $scope.chartModel.minuteWidth;
-      };
-
-      /**
-       * 描画を開始するY座標を取得します。
-       *
-       * @param offsetY イベント発生時のY座標
-       *
-       * @returns {number}
-       */
-      $scope.getDrawRectY = function(offsetY) {
-        var absoluteY = offsetY - $scope.chartModel.headerHeight;
-        return absoluteY === 0 ? 0 : Math.floor(absoluteY / $scope.chartModel.reservationHeight) * $scope.chartModel.reservationHeight + $scope.chartModel.headerHeight;
-      };
-
-      /**
-       * 選択開始時刻を取得します。
-       *
-       * @param offsetX イベント発生時のX座標
-       *
-       * @returns {String}
-       */
-      $scope.getStartTime = function(offsetX) {
-        var startX = $scope.getDrawRectX(offsetX);
-        return $scope.getTime(startX);
-      };
-
-      /**
-       * 選択終了時刻を取得します。
-       *
-       * @param offsetX イベント発生時のX座標
-       *
-       * @returns {String}
-       */
-      $scope.getEndTime = function(offsetX) {
-        var endX = $scope.chartModel.minuteWidth + $scope.getDrawRectX(offsetX);
-        return $scope.getTime(endX);
-      };
-
-      /**
-       * X座標に位置する時刻を取得します。
-       *
-       * @param targetX イベント発生時のX座標
-       *
-       * @returns {string}
-       */
-      $scope.getTime = function(targetX) {
-        var minuteCount = targetX / $scope.chartModel.minuteWidth;
-        var hour = Math.floor(minuteCount / $scope.chartModel.hourSplitCount);
-        var minute = minuteCount % $scope.chartModel.hourSplitCount * $scope.chartModel.minuteWidth;
-        return ('00' + String(hour)).slice(-2) + ':' + ('00' + String(minute)).slice(-2);
       };
 
 	}])
