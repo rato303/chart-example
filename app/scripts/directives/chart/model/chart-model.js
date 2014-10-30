@@ -22,7 +22,8 @@ angular.module('chartExampleApp')
       "takuNinzu": '',
       "shubetsu": '',
       "takumei": '',
-      "kitsuen": ''
+      "kitsuen": '',
+      "label": ''
     };
 
     return {
@@ -47,6 +48,10 @@ angular.module('chartExampleApp')
       "drawMode": false,
       /** Drag & Drop モード */
       "ddMode": false,
+      /** Resizeモード */
+      "resizeMode": false,
+      /** Drag & Drop 中のセル情報 */
+      "ddCellItem": null,
       /** 描画中のセル情報 */
       "drawingCellItem": null,
       /** Drag & Drop 開始セル情報 */
@@ -115,6 +120,7 @@ angular.module('chartExampleApp')
           newReservationItem.shubetsu = tableItem.shubetsu;
           newReservationItem.takumei = tableItem.takumei;
           newReservationItem.kitsuen = tableItem.kitsuen;
+          newReservationItem.label = '予約者名 ' + '100人';
           newReservationItems.push(newReservationItem);
         }
         return newReservationItems;
@@ -148,36 +154,54 @@ angular.module('chartExampleApp')
         return newCellItem;
       },
       /**
-       * セル情報を更新します。
+       * セル情報をリサイズします。
        *
        * @param offsetX イベント発生時のX座標
        *
        * @param offsetY イベント発生時のY座標
        *
        */
-      "updateCellItem": function(offsetX, offsetY) {
+      "resizeCellItem": function(offsetX, offsetY) {
         // TODO 左にひっぱった場合の対応が未実装
-        var newRectWidth = (this.getDrawRectX(offsetX) + this.minuteWidth) - this.drawingCellItem.x;
-        var newRectHeight = (this.getDrawRectY(offsetY) + this.reservationHeight) - this.drawingCellItem.y;
-        this.drawingCellItem.width = newRectWidth;
-        this.drawingCellItem.height = newRectHeight;
+        var targetCellItem = null;
+
+        if (this.drawMode) {
+          targetCellItem = this.drawingCellItem;
+          var newRectHeight = (this.getDrawRectY(offsetY) + this.reservationHeight) - targetCellItem.y;
+          targetCellItem.height = newRectHeight;
+        }
+        if (this.resizeMode) {
+          targetCellItem = this.ddCellItem;
+        }
+
+        if (targetCellItem == null) { return; }
+
+        var newRectWidth = (this.getDrawRectX(offsetX) + this.minuteWidth) - targetCellItem.x;
+        targetCellItem.width = newRectWidth;
+
       },
       /**
-       * Drag & Drop 中のセル情報を更新します。
+       * セル情報を移動します。
        *
        * @param offsetX イベント発生時のX座標
        *
        * @param offsetY イベント発生時のY座標
        */
-      "ddUpdateCellItem": function(offsetX, offsetY) {
-        if ( ! this.ddMode) { return }
+      "moveCellItem": function(offsetX, offsetY) {
+        var targetCellItem = null;
+        if (this.ddMode) {
+          targetCellItem = this.ddCellItem;
+        }
+
+        if (targetCellItem == null) { return; }
+
         var afterX = this.getDrawRectX(offsetX);
         var afterY = this.getDrawRectY(offsetY);
-        var newX = this.drawingCellItem.x - (this.ddStartItem.x - afterX);
-        var newY = this.drawingCellItem.y - (this.ddStartItem.y - afterY);
+        var newX = targetCellItem.x - (this.ddStartItem.x - afterX);
+        var newY = targetCellItem.y - (this.ddStartItem.y - afterY);
 
-        this.drawingCellItem.x = newX;
-        this.drawingCellItem.y = newY;
+        targetCellItem.x = newX;
+        targetCellItem.y = newY;
         this.ddStartItem.x = afterX;
         this.ddStartItem.y = afterY;
       },

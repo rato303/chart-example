@@ -70,7 +70,15 @@ angular.module('chartExampleApp')
         }
 
         if ($scope.chartModel.ddMode) {
+          $scope.chartModel.ddCellItem.opacity = '1.0';
+          $scope.chartModel.ddCellItem.fill = 'green';
           $scope.chartModel.ddMode = false;
+        }
+
+        if ($scope.chartModel.resizeMode) {
+          $scope.chartModel.ddCellItem.opacity = '1.0';
+          $scope.chartModel.ddCellItem.fill = 'green';
+          $scope.chartModel.resizeMode = false;
         }
 
       };
@@ -91,17 +99,31 @@ angular.module('chartExampleApp')
         console.log('over');
         if ($scope.chartModel.drawMode) {
           $scope.moge[tableItem.$$hashKey] = tableItem;
-          $scope.chartModel.updateCellItem(event.offsetX, event.offsetY);
         }
-        $scope.chartModel.ddUpdateCellItem(event.offsetX, event.offsetY);
-
+        $scope.chartModel.resizeCellItem(event.offsetX, event.offsetY);
+        $scope.chartModel.moveCellItem(event.offsetX, event.offsetY);
       };
 
+      /**
+       * 予約情報のセルオブジェクト上でマウスを動かした場合の処理
+       *
+       * @param event mouse-moveイベント
+       *
+       * @param reservationItem 予約情報
+       */
+      $scope.reservationMouseMove = function(event, reservationItem) {
+        $scope.chartModel.moveCellItem(event.offsetX, event.offsetY);
+        $scope.chartModel.resizeCellItem(event.offsetX, event.offsetY);
+      };
+
+      /**
+       * 描画中のセルオブジェクト上でマウスを動かした場合の処理
+       *
+       * @param event mouse-moveイベント
+       */
       $scope.drawingCellMove = function(event) {
-        if ($scope.chartModel.drawMode) {
-          $scope.chartModel.updateCellItem(event.offsetX, event.offsetY);
-        }
-        $scope.chartModel.ddUpdateCellItem(event.offsetX, event.offsetY);
+        $scope.chartModel.resizeCellItem(event.offsetX, event.offsetY);
+        $scope.chartModel.moveCellItem(event.offsetX, event.offsetY);
       }
 
       // TODO メソッド名はリファクタリング対象
@@ -116,18 +138,43 @@ angular.module('chartExampleApp')
         //console.log('offsetX[' + event.offsetX + '] offsetY[' + event.offsetY + ']');
       };
 
-      $scope.reservationMouseDown = function(event, cellItem) {
+      /**
+       * 予約情報マウス押下処理
+       *
+       * @param event mouse-downイベント
+       *
+       * @param index 予約情報の配列のインデックス
+       *
+       * @param cellItem マウスが押下された予約情報
+       */
+      $scope.reservationMouseDown = function(event, index, cellItem) {
         console.log('reservationMouseDown');
-        $scope.chartModel.ddMode = true;
+
+        var reservationEndY = cellItem.y + $scope.chartModel.reservationHeight;
+        var reservationEndX = cellItem.x + cellItem.width;
+        var resizeStartX = reservationEndX - 8;
+        var resizeStartY = reservationEndY - 8;
+        if (resizeStartX < event.offsetX && resizeStartY < event.offsetY) {
+          $scope.chartModel.resizeMode = true;
+        } else {
+          $scope.chartModel.ddMode = true;
+        }
+
         $scope.chartModel.ddStartItem.x = $scope.chartModel.getDrawRectX(event.offsetX);
         $scope.chartModel.ddStartItem.y = $scope.chartModel.getDrawRectY(event.offsetY);
         console.log('$scope.chartModel.ddStartItem.x[' + $scope.chartModel.ddStartItem.x +
               ']$scope.chartModel.ddStartItem.y[' + $scope.chartModel.ddStartItem.y +
               ']');
-        $scope.chartModel.drawingCellItem = cellItem;
+
+        cellItem.fill = 'aqua';
+        cellItem.opacity = '0.5';
+        $scope.chartModel.ddCellItem = cellItem;
+
+        $scope.reservationItems.push(cellItem);
+        $scope.reservationItems.splice(index, 1);
       };
 
-      $scope.onscroll = function(event) {
+      $scope.onScroll = function(event) {
         console.log('scroll');
         console.log('scrollTop[' + event.target.scrollTop + ']scrollLeft[' + event.target.scrollLeft + ']');
         $scope.chartModel.headerY = event.target.scrollTop;
