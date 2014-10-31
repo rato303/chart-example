@@ -10,31 +10,30 @@ angular.module('chartExampleApp')
 	.controller('ChartCtrl', ['$scope', 'chartModel', '$modal',
     function ChartCtrl($scope, chartModel, $modal) {
 
-      /** チャートの情報 */
-      $scope.chartModel = chartModel.createHeaderItems(0, 24);
-
-      /**
-       * 予約情報の選択を開始します。
-       *
-       * @param event mouse-downイベント
-       *
-       */
-      $scope.startSelect = function (event) {
-        console.log('startSelect');
-        $scope.chartModel.drawMode = true;
-        $scope.chartModel.drawingCellItem = $scope.chartModel.createCellItem(event.offsetX, event.offsetY);
-        $scope.chartModel.setMouseDownTableIndex(event.offsetY);
+      // TODO 全体のmouseMove jsDoc
+      $scope.chartMouseMove = function(event) {
+        $scope.chartModel.resizeCellItem(event.offsetX, event.offsetY);
+        $scope.chartModel.moveCellItem(event.offsetX, event.offsetY);
       };
 
       /**
-       * 予約情報の選択を終了します。
+       * 卓情報上のMouseDown処理です。
+       * 新規予約情報の選択を開始します。
        *
-       * @param event mouse-upイベント
+       * @param event MouseDownイベント
+       *
+       * @param index MouseDown時の卓情報のインデックス
        *
        */
-      $scope.endSelect = function(event) {
-        console.log('endSelect');
+      $scope.tableMouseDown = function(event, index) {
+        $scope.chartModel.drawMode = true;
+        $scope.chartModel.drawingCellItem = $scope.chartModel.createCellItem(event.offsetX, event.offsetY);
+        $scope.chartModel.setMouseDownTableIndex(index);
+      };
 
+      // TODO 全体のmouseUp jsDoc
+      $scope.chartMouseUp = function(event) {
+        console.log('chartMouseUp');
         if ($scope.chartModel.drawMode) {
           $scope.chartModel.drawMode = false;
           $scope.chartModel.setMouseUpTableIndex(event.offsetY);
@@ -59,7 +58,6 @@ angular.module('chartExampleApp')
           });
 
         }
-
         $scope.chartModel.releasesDragMode($scope.reservationItems, $scope.chartWidth, $scope.chartHeight);
 
         // TODO モデル側にリファクタリング
@@ -67,49 +65,10 @@ angular.module('chartExampleApp')
           $scope.chartModel.ddMovingCellItem.setThemeTemporaryReservation();
           $scope.chartModel.resizeMode = false;
         }
-
       };
 
-      // TODO メソッド名はリファクタリング対象
-      $scope.over = function(event, tableItem) {
-        console.log('over');
-        $scope.chartModel.resizeCellItem(event.offsetX, event.offsetY);
-        $scope.chartModel.moveCellItem(event.offsetX, event.offsetY);
-      };
-
-      /**
-       * 予約情報のセルオブジェクト上でマウスを動かした場合の処理
-       *
-       * @param event mouse-moveイベント
-       *
-       * @param reservationItem 予約情報
-       */
-      $scope.reservationMouseMove = function(event, reservationItem) {
-        $scope.chartModel.moveCellItem(event.offsetX, event.offsetY);
-        $scope.chartModel.resizeCellItem(event.offsetX, event.offsetY);
-      };
-
-      /**
-       * 描画中のセルオブジェクト上でマウスを動かした場合の処理
-       *
-       * @param event mouse-moveイベント
-       */
-      $scope.drawingCellMove = function(event) {
-        $scope.chartModel.resizeCellItem(event.offsetX, event.offsetY);
-        $scope.chartModel.moveCellItem(event.offsetX, event.offsetY);
-      }
-
-      // TODO メソッド名はリファクタリング対象
-      $scope.enter = function(event) {
-        //console.log('enter');
-        //console.log('offsetX[' + event.offsetX + '] offsetY[' + event.offsetY + ']');
-      };
-
-      // TODO メソッド名はリファクタリング対象
-      $scope.leave = function(event) {
-        //console.log('leave');
-        //console.log('offsetX[' + event.offsetX + '] offsetY[' + event.offsetY + ']');
-      };
+      /** チャートの情報 */
+      $scope.chartModel = chartModel.createHeaderItems(0, 24);
 
       /**
        * 予約情報マウス押下処理
@@ -138,7 +97,6 @@ angular.module('chartExampleApp')
           $scope.chartModel.ddWaitingCellItem.setThemeDragAndDropWaiting();
 
           $scope.chartModel.ddMovingCellItem = cellItem;
-          $scope.chartModel.ddMovingCellItem.index = index;
           $scope.chartModel.ddMovingCellItem.setThemeDraging();
           $scope.reservationItems.push($scope.reservationItems.splice(index, 1)[0]);
         }

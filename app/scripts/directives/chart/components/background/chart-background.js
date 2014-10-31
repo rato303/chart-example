@@ -15,9 +15,9 @@ angular.module('chartExampleApp')
       scope: {
         "chartWidth": "=",
         "chartHeight": "=",
-        "tableCaptionWidth": "=",
         "tableItems": "=",
         "headerItems": "=",
+        "tableCaptionWidth": "=",
         "hourSplitCount": "="
       },
       link: function postLink(scope) {
@@ -30,7 +30,7 @@ angular.module('chartExampleApp')
           var x = i * width;
 
           scope.lineItems.push({
-            "x": x,
+            "x": scope.tableCaptionWidth + x,
             "y2": scope.chartHeight,
             "width": width,
             "time": "00:00"

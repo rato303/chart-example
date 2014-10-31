@@ -32,18 +32,18 @@
 
     <!-- 波線 START -->
     <line ng-repeat="lineItem in lineItems"
-          svg-x1="{{tableCaptionWidth + headerItem.x + lineItem.x}}"
+          svg-x1="{{headerItem.x + lineItem.x}}"
           svg-y1="0"
-          svg-x2="{{tableCaptionWidth + headerItem.x + lineItem.x}}"
+          svg-x2="{{headerItem.x + lineItem.x}}"
           svg-y2="{{chartHeight}}"
           stroke-width="1" stroke="#000000"
           stroke-dasharray="1.5 1.5"></line>
     <!-- 波線 END -->
 
     <!-- 実線 START -->
-    <line svg-x1="{{tableCaptionWidth + headerItem.x + headerItem.width}}"
+    <line svg-x1="{{headerItem.x + headerItem.width}}"
           svg-y1="0"
-          svg-x2="{{tableCaptionWidth + headerItem.x + headerItem.width}}"
+          svg-x2="{{headerItem.x + headerItem.width}}"
           svg-y2="{{chartHeight}}"
           stroke-width="1" stroke="#000000"></line>
     <!-- 実線 END -->

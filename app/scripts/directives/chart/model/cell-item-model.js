@@ -23,8 +23,6 @@ angular.module('chartExampleApp')
     var height = 0;
     /** 幅 */
     var width = 0;
-    /** セルのインデックス */
-    var index = -1;
     /** 色 */
     var fill = '';
     /** 透明度 */
@@ -86,19 +84,24 @@ angular.module('chartExampleApp')
     function isOverlap(cellItemModel) {
       var thisEndX = this.getEndX();
       var thatEndX = cellItemModel.getEndX();
-      if (cellItemModel.index == this.index) {
+      if (cellItemModel.$$hashKey == this.$$hashKey) {
         return false;
       }
       if (cellItemModel.y != this.y) {
         return false;
       }
-      if (cellItemModel.x < this.x && this.x < thatEndX) {
+      if (thisEndX <= cellItemModel.x || thatEndX <= this.x) {
+        return false;
+      }
+      /*
+      if (cellItemModel.x <= this.x && this.x < thatEndX) {
         return true;
       }
-      if (cellItemModel.x < thisEndX && thisEndX < thatEndX) {
+      if (cellItemModel.x < thisEndX && thisEndX <= thatEndX) {
         return true;
       }
-      return false;
+      */
+      return true;
     };
 
     /**
@@ -113,8 +116,8 @@ angular.module('chartExampleApp')
      * @param chartHeight チャート全体の高さ
      */
     function iIllegaDropArea(tableCaptionWidth, chartWidth, headerHeight, chartHeight) {
-
-      if (this.x < tableCaptionWidth || chartWidth < this.x + this.width) {
+      var realChartWidth = chartWidth + tableCaptionWidth;  // TODO chart.jsかchart-model.jsでカバーするようにする
+      if (this.x < tableCaptionWidth || realChartWidth < this.x + this.width) {
         return true;
       }
 
@@ -130,7 +133,6 @@ angular.module('chartExampleApp')
       y: y,
       height: height,
       width: width,
-      index: index,
       fill: fill,
       opacity: opacity,
       startTime: startTime,

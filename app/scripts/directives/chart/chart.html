@@ -2,23 +2,23 @@
 
 	<svg svg-width="{{chartModel.tableCaptionWidth + chartWidth}}" svg-height="{{chartHeight}}">
 
-    <!-- 背景 START -->
-    <chart-background
-      chart-width="chartWidth"
-      chart-height="chartHeight"
-      table-caption-width="chartModel.tableCaptionWidth"
-      table-items="tableItems"
-      header-items="chartModel.headerItems"
-      hour-split-count="chartModel.hourSplitCount">
-    </chart-background>
-    <!-- 背景 END -->
+    <g ng-mousemove="chartMouseMove($event)"
+       ng-mouseup="chartMouseUp($event)">
 
-		<g ng-mouseenter="enter($event)"
-		   ng-mouseleave="leave($event)">
+      <!-- 背景 START -->
+      <chart-background
+        chart-width="chartWidth"
+        chart-height="chartHeight"
+        table-caption-width="chartModel.tableCaptionWidth"
+        table-items="tableItems"
+        header-items="chartModel.headerItems"
+        hour-split-count="chartModel.hourSplitCount">
+      </chart-background>
+      <!-- 背景 END -->
 
       <!-- Drag & Drop待機中予約情報START -->
       <g>
-        <rect svg-x="{{chartModel.tableCaptionWidth + chartModel.ddWaitingCellItem.x}}"
+        <rect svg-x="{{chartModel.ddWaitingCellItem.x}}"
               svg-y="{{chartModel.ddWaitingCellItem.y}}"
               svg-height="{{chartModel.ddWaitingCellItem.height}}"
               svg-width="{{chartModel.ddWaitingCellItem.width}}"
@@ -29,110 +29,109 @@
       </g>
       <!-- Drag & Drop待機中予約情報END -->
 
-			<!-- 卓情報 START -->
-			<g>
-				<!-- 卓情報予約操作領域 START -->
-				<rect ng-repeat="tableItem in tableItems"
-              ng-mousedown="startSelect($event)"
-              ng-mousemove="over($event, tableItem)"
-					  svg-x="{{chartModel.tableCaptionWidth}}" svg-y="{{tableItem.y}}"
-					  width="100%" svg-height="{{chartModel.reservationHeight}}"
-					  opacity="0.0">
-				</rect>
-				<!-- 卓情報予約操作領域 END -->
-			</g>
-			<!-- 卓情報 END -->
-
-			<!-- 予約情報 START -->
-      <g>
-        <g ng-repeat="reservationItem in reservationItems">
-          <rect ng-mousedown="reservationMouseDown($event, $index, reservationItem)"
-                ng-mouseup="endSelect($event)"
-                ng-mousemove="reservationMouseMove($event, reservationItem)"
-                svg-x="{{chartModel.tableCaptionWidth + reservationItem.x}}"
-                svg-y="{{reservationItem.y}}"
-                svg-height="{{reservationItem.height}}"
-                svg-width="{{reservationItem.width}}"
-                fill="{{reservationItem.fill}}"
-                opacity="{{reservationItem.opacity}}"
-                rx="5" ry="5"
-                stroke-width="1" stroke="#000000"></rect>
-          <text svg-x="{{chartModel.tableCaptionWidth + reservationItem.x}}"
-                svg-y="{{reservationItem.y + 18}}"
-                font-family="Verdana" text-anchor="start"
-                font-size="11"
-                svg-style="{{reservationItem.styles}}"
-                >
-            {{reservationItem.label}}
-          </text>
-        </g>
+      <!-- 卓情報 START -->
+      <g ng-repeat="tableItem in tableItems"
+         ng-mousedown="tableMouseDown($event, $index)">
+        <!-- 卓情報予約操作領域 START -->
+        <rect svg-x="{{chartModel.tableCaptionWidth}}"
+              svg-y="{{tableItem.y}}"
+              width="100%"
+              svg-height="{{chartModel.reservationHeight}}"
+              opacity="0.0">
+        </rect>
+        <!-- 卓情報予約操作領域 END -->
       </g>
-			<!-- 予約情報 END -->
+      <!-- 卓情報 END -->
+
+      <!-- 予約情報 START -->
+      <g ng-repeat="reservationItem in reservationItems">
+
+        <rect ng-mousedown="reservationMouseDown($event, $index, reservationItem)"
+              svg-x="{{reservationItem.x}}"
+              svg-y="{{reservationItem.y}}"
+              svg-height="{{reservationItem.height}}"l
+              svg-width="{{reservationItem.width}}"
+              fill="{{reservationItem.fill}}"
+              opacity="{{reservationItem.opacity}}"
+              rx="5" ry="5"
+              stroke-width="1" stroke="#000000"></rect>
+        <text svg-x="{{reservationItem.x}}"
+              svg-y="{{reservationItem.y + 18}}"
+              font-family="Verdana" text-anchor="start"
+              font-size="11"
+              svg-style="{{reservationItem.styles}}"
+              >
+          {{reservationItem.label}}
+        </text>
+      </g>
+      <!-- 予約情報 END -->
 
       <!-- 新規追加中予約情報 START -->
-      <rect svg-x="{{chartModel.tableCaptionWidth + chartModel.drawingCellItem.x}}" svg-y="{{chartModel.drawingCellItem.y}}"
-            svg-height="{{chartModel.drawingCellItem.height}}" svg-width="{{chartModel.drawingCellItem.width}}"
-            ng-mouseup="endSelect($event)"
-            ng-mousemove="drawingCellMove($event)"
-            fill="{{chartModel.drawingCellItem.fill}}"
-            opacity="{{chartModel.drawingCellItem.opacity}}"
-            rx="5" ry="5"
-            stroke-width="1" stroke="#000000" />
+      <g>
+        <rect svg-x="{{chartModel.drawingCellItem.x}}"
+              svg-y="{{chartModel.drawingCellItem.y}}"
+              svg-height="{{chartModel.drawingCellItem.height}}"
+              svg-width="{{chartModel.drawingCellItem.width}}"
+              fill="{{chartModel.drawingCellItem.fill}}"
+              opacity="{{chartModel.drawingCellItem.opacity}}"
+              rx="5" ry="5"
+              stroke-width="1" stroke="#000000" />
+      </g>
       <!-- 新規追加中予約情報 END -->
 
-		</g>
+      <!-- 卓情報 START -->
+      <g ng-repeat="tableItem in tableItems">
 
-		<!-- 卓情報 START -->
-		<g ng-repeat="tableItem in tableItems">
+        <!-- 卓情報キャプション領域 START -->
+        <rect svg-x="{{chartModel.headerX}}" svg-y="{{tableItem.y}}"
+            width="60" svg-height="{{chartModel.reservationHeight}}"
+            fill="#FFFFFF" style="stroke-width:1; stroke:rgb(0, 0, 0)">
+        </rect>
+        <text svg-x="{{chartModel.headerX}}" svg-y="{{tableItem.labelY}}"
+            font-family="Verdana" text-anchor="start"
+            font-size="11">
+            {{tableItem.takuNinzu}}
+        </text>
 
-			<!-- 卓情報キャプション領域 START -->
-			<rect svg-x="{{chartModel.headerX}}" svg-y="{{tableItem.y}}"
-				  width="60" svg-height="{{chartModel.reservationHeight}}"
-				  fill="#FFFFFF" style="stroke-width:1; stroke:rgb(0, 0, 0)">
-			</rect>
-			<text svg-x="{{chartModel.headerX}}" svg-y="{{tableItem.labelY}}"
-				  font-family="Verdana" text-anchor="start"
-				  font-size="11">
-				  {{tableItem.takuNinzu}}
-			</text>
+        <rect svg-x="{{chartModel.headerX + 60}}" svg-y="{{tableItem.y}}"
+            width="60" svg-height="{{chartModel.reservationHeight}}"
+            fill="#FFFFFF" style="stroke-width:1; stroke:rgb(0, 0, 0)">
+        </rect>
+        <text svg-x="{{chartModel.headerX + 60}}" svg-y="{{tableItem.labelY}}"
+            font-family="Verdana" text-anchor="start"
+            font-size="11">
+            {{tableItem.shubetsu}}
+        </text>
 
-			<rect svg-x="{{chartModel.headerX + 60}}" svg-y="{{tableItem.y}}"
-				  width="60" svg-height="{{chartModel.reservationHeight}}"
-				  fill="#FFFFFF" style="stroke-width:1; stroke:rgb(0, 0, 0)">
-			</rect>
-			<text svg-x="{{chartModel.headerX + 60}}" svg-y="{{tableItem.labelY}}"
-				  font-family="Verdana" text-anchor="start"
-				  font-size="11">
-				  {{tableItem.shubetsu}}
-			</text>
+        <rect svg-x="{{chartModel.headerX + 120}}" svg-y="{{tableItem.y}}"
+            width="60" svg-height="{{chartModel.reservationHeight}}"
+            fill="#FFFFFF" style="stroke-width:1; stroke:rgb(0, 0, 0)">
+        </rect>
+        <text svg-x="{{chartModel.headerX + 120}}" svg-y="{{tableItem.labelY}}"
+            font-family="Verdana" text-anchor="start"
+            font-size="11">
+            {{tableItem.takumei}}
+        </text>
 
-			<rect svg-x="{{chartModel.headerX + 120}}" svg-y="{{tableItem.y}}"
-				  width="60" svg-height="{{chartModel.reservationHeight}}"
-				  fill="#FFFFFF" style="stroke-width:1; stroke:rgb(0, 0, 0)">
-			</rect>
-			<text svg-x="{{chartModel.headerX + 120}}" svg-y="{{tableItem.labelY}}"
-				  font-family="Verdana" text-anchor="start"
-				  font-size="11">
-				  {{tableItem.takumei}}
-			</text>
+        <rect svg-x="{{chartModel.headerX + 180}}" svg-y="{{tableItem.y}}"
+            width="60" svg-height="{{chartModel.reservationHeight}}"
+            fill="#FFFFFF" style="stroke-width:1; stroke:rgb(0, 0, 0)">
+        </rect>
+        <text svg-x="{{chartModel.headerX + 180}}" svg-y="{{tableItem.labelY}}"
+            font-family="Verdana" text-anchor="start"
+            font-size="11">
+            {{tableItem.kitsuen}}
+        </text>
+        <!-- 卓情報キャプション領域 END -->
 
-			<rect svg-x="{{chartModel.headerX + 180}}" svg-y="{{tableItem.y}}"
-				  width="60" svg-height="{{chartModel.reservationHeight}}"
-				  fill="#FFFFFF" style="stroke-width:1; stroke:rgb(0, 0, 0)">
-			</rect>
-			<text svg-x="{{chartModel.headerX + 180}}" svg-y="{{tableItem.labelY}}"
-				  font-family="Verdana" text-anchor="start"
-				  font-size="11">
-				  {{tableItem.kitsuen}}
-			</text>
-			<!-- 卓情報キャプション領域 END -->
+      </g>
+      <!-- 卓情報 END -->
 
-		</g>
-		<!-- 卓情報 END -->
+      <!-- チャートヘッダー START -->
+      <svg ng-include="'scripts/directives/chart/components/header/chart-header.html'"></svg>
+      <!-- チャートヘッダー END -->
 
-    <!-- チャートヘッダー START -->
-    <svg ng-include="'scripts/directives/chart/components/header/chart-header.html'"></svg>
-    <!-- チャートヘッダー END -->
+    </g>
 
 	</svg>
 
