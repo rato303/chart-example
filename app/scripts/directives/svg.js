@@ -57,4 +57,24 @@ angular.module('chartExampleApp')
 		});
 	};
 })
+.directive('svgStyle', function() {
+  return function(scope, element, attrs) {
+    attrs.$observe('svgStyle', function(style) {
+      //if (angular.isUndefined(style)) { return ;}
+
+      var styleMap = angular.fromJson(style);
+      var styleString = '';
+      var first = true;
+      for (var key in styleMap) {
+        if (first) {
+          first = false;
+        } else {
+          styleString += ' ';
+        }
+        styleString += key + ': ' + styleMap[key]; + ';'
+      }
+      element.attr('style', styleString);
+    });
+  };
+})
 ;

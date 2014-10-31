@@ -19,11 +19,11 @@ angular.module('chartExampleApp')
        * @param event mouse-downイベント
        *
        */
-      $scope.startSelect = function (event, tableItem) {
+      $scope.startSelect = function (event) {
         console.log('startSelect');
         $scope.chartModel.drawMode = true;
-        $scope.moge[tableItem.$$hashKey] = tableItem;
         $scope.chartModel.drawingCellItem = $scope.chartModel.createCellItem(event.offsetX, event.offsetY);
+        $scope.chartModel.setMouseDownTableIndex(event.offsetY);
       };
 
       /**
@@ -37,69 +37,42 @@ angular.module('chartExampleApp')
 
         if ($scope.chartModel.drawMode) {
           $scope.chartModel.drawMode = false;
-          var newReservationItems = $scope.chartModel.createReservationItems(event, $scope.moge);
-
-          // TODO createReservationItems内で呼ばれているので呼び出し方を考える
-          // TODO createDialogModelメソッドを作成して、newReservationItemsとstartTime,endTimeを梱包する
-          var startTime = $scope.chartModel.drawingCellItem.startTime;
-          var endTime = $scope.chartModel.getEndTime(event.offsetX);
+          $scope.chartModel.setMouseUpTableIndex(event.offsetY);
 
           $scope.modalInstance = $modal.open({
             controller: 'ReservationDialogCtrl',
             templateUrl: 'scripts/directives/chart/components/dialog/reservation-dialog.html',
             resolve: {
               dialogModel: function() {
-                return {
-                  "startTime": startTime,
-                  "endTime": endTime,
-                  "selectItems": newReservationItems
-                };
+                return $scope.chartModel.createDialogModel(event, $scope.tableItems);
               }
             }
           });
 
           $scope.modalInstance.result.then(function (dialogModel) {
             console.log('確定');
-            $scope.reservationItems = $scope.reservationItems.concat(dialogModel.selectItems);
-            $scope.dialogCloseCommonProcess();
+            $scope.reservationItems = $scope.reservationItems.concat(dialogModel.newReservationItems);
+            $scope.chartModel.clearDrawingCellItem();
           }, function () {
             console.log('キャンセル');
-            $scope.dialogCloseCommonProcess();
+            $scope.chartModel.clearDrawingCellItem();
           });
 
         }
 
-        if ($scope.chartModel.ddMode) {
-          $scope.chartModel.ddCellItem.opacity = '1.0';
-          $scope.chartModel.ddCellItem.fill = 'green';
-          $scope.chartModel.ddMode = false;
-        }
+        $scope.chartModel.releasesDragMode($scope.reservationItems, $scope.chartWidth, $scope.chartHeight);
 
+        // TODO モデル側にリファクタリング
         if ($scope.chartModel.resizeMode) {
-          $scope.chartModel.ddCellItem.opacity = '1.0';
-          $scope.chartModel.ddCellItem.fill = 'green';
+          $scope.chartModel.ddMovingCellItem.setThemeTemporaryReservation();
           $scope.chartModel.resizeMode = false;
         }
 
       };
 
-      /**
-       * TODO chart-model側にリファクタリング
-       * ダイアログを閉じる際の共通処理
-       */
-      $scope.dialogCloseCommonProcess = function() {
-        $scope.chartModel.clearDrawingCellItem();
-        $scope.moge = {};
-      };
-
-      // TODO フィールド名はリファクタリング対象
-      $scope.moge = {};
       // TODO メソッド名はリファクタリング対象
       $scope.over = function(event, tableItem) {
         console.log('over');
-        if ($scope.chartModel.drawMode) {
-          $scope.moge[tableItem.$$hashKey] = tableItem;
-        }
         $scope.chartModel.resizeCellItem(event.offsetX, event.offsetY);
         $scope.chartModel.moveCellItem(event.offsetX, event.offsetY);
       };
@@ -150,30 +123,32 @@ angular.module('chartExampleApp')
       $scope.reservationMouseDown = function(event, index, cellItem) {
         console.log('reservationMouseDown');
 
+        // TODO モデル側にリファクタリング
         var reservationEndY = cellItem.y + $scope.chartModel.reservationHeight;
         var reservationEndX = cellItem.x + cellItem.width;
         var resizeStartX = reservationEndX - 8;
         var resizeStartY = reservationEndY - 8;
+        // TODO canResizable? canDraggable?
         if (resizeStartX < event.offsetX && resizeStartY < event.offsetY) {
           $scope.chartModel.resizeMode = true;
         } else {
-          $scope.chartModel.ddMode = true;
+          $scope.chartModel.isDragState = true;
+
+          $scope.chartModel.ddWaitingCellItem = angular.copy(cellItem);
+          $scope.chartModel.ddWaitingCellItem.setThemeDragAndDropWaiting();
+
+          $scope.chartModel.ddMovingCellItem = cellItem;
+          $scope.chartModel.ddMovingCellItem.index = index;
+          $scope.chartModel.ddMovingCellItem.setThemeDraging();
+          $scope.reservationItems.push($scope.reservationItems.splice(index, 1)[0]);
         }
 
+        // TODO モデル側にリファクタリング
         $scope.chartModel.ddStartItem.x = $scope.chartModel.getDrawRectX(event.offsetX);
         $scope.chartModel.ddStartItem.y = $scope.chartModel.getDrawRectY(event.offsetY);
-        console.log('$scope.chartModel.ddStartItem.x[' + $scope.chartModel.ddStartItem.x +
-              ']$scope.chartModel.ddStartItem.y[' + $scope.chartModel.ddStartItem.y +
-              ']');
-
-        cellItem.fill = 'aqua';
-        cellItem.opacity = '0.5';
-        $scope.chartModel.ddCellItem = cellItem;
-
-        $scope.reservationItems.push(cellItem);
-        $scope.reservationItems.splice(index, 1);
       };
 
+      // TODO jsDoc
       $scope.onScroll = function(event) {
         console.log('scroll');
         console.log('scrollTop[' + event.target.scrollTop + ']scrollLeft[' + event.target.scrollLeft + ']');

@@ -8,23 +8,7 @@
  * Factory in the chartExampleApp.
  */
 angular.module('chartExampleApp')
-  .factory('chartModel', function () {
-
-    var _cellItem = {
-      "x": 0,
-      "y": 0,
-      "height": 0,
-      "width": 0,
-      "fill": '',
-      "opacity": 0.0,
-      "startTime": '',
-      "endTime": '',
-      "takuNinzu": '',
-      "shubetsu": '',
-      "takumei": '',
-      "kitsuen": '',
-      "label": ''
-    };
+  .factory('chartModel', ['CellItemModel', function (CellItemModel) {
 
     return {
       /** 時間テキストのy軸*/
@@ -46,19 +30,25 @@ angular.module('chartExampleApp')
       "headerItems": [],
       /** 描画モード */
       "drawMode": false,
-      /** Drag & Drop モード */
-      "ddMode": false,
+      /** Drag状態 */
+      "isDragState": false,
       /** Resizeモード */
       "resizeMode": false,
-      /** Drag & Drop 中のセル情報 */
-      "ddCellItem": null,
+      /** Drag & Drop中のセル情報 */
+      "ddMovingCellItem": new CellItemModel(),
+      /** Drag & Drop待機中のセル情報 */
+      "ddWaitingCellItem": new CellItemModel(),
       /** 描画中のセル情報 */
-      "drawingCellItem": null,
+      "drawingCellItem": new CellItemModel(),
       /** Drag & Drop 開始セル情報 */
       "ddStartItem": {
         "x": 0,
         "y": 0
       },
+      /** マウス押下時の卓情報のインデックス */
+      "mouseDownTableIndex": -1,
+      /** マウス開放時の卓情報のインデックス */
+      "mouseUpTableIndex": -1,
       /** 卓ヘッダ情報 */
       "tableCaptionItems": [
         {'label': '卓人数', 'x': 0, 'width': 60},
@@ -91,31 +81,39 @@ angular.module('chartExampleApp')
         }
         return this;
       },
+      "createDialogModel": function(event, tableItems) {
+        var startTime = this.drawingCellItem.startTime;
+        var endTime = this.getEndTime(event.offsetX);
+        return {
+          'startTime': startTime,
+          'endTime': endTime,
+          'newReservationItems': this.createReservationItems(startTime, endTime, tableItems)
+        };
+      },
       /**
        * 仮予約情報を生成します。
        *
-       * @param event イベント
+       * @param startTime 予約開始時刻
        *
-       * @param moge
+       * @param endTime 予約終了時刻
+       *
+       * @param tableItems 卓情報の配列
        *
        * @returns {Array} 仮予約情報の配列
        */
-      "createReservationItems": function(event, moge) {
-        var startTime = this.drawingCellItem.startTime;
-        var endTime = this.getEndTime(event.offsetX);
-        var newReservationItems = [];
+      "createReservationItems": function(startTime, endTime, tableItems) {
 
-        for (var key in moge) {
-          var tableItem = moge[key];
-          var newReservationItem = angular.copy(_cellItem);
+        var newReservationItems = [];
+        for (var i = this.mouseDownTableIndex; i < this.mouseUpTableIndex; i++) {
+          var tableItem = tableItems[i];
+          var newReservationItem = new CellItemModel();
+          newReservationItem.setThemeTemporaryReservation();
           newReservationItem.startTime = startTime;
           newReservationItem.endTime = endTime;
           newReservationItem.x = this.timeToX(startTime);
           newReservationItem.y = tableItem.y;
           newReservationItem.height = this.reservationHeight;
           newReservationItem.width = this.timeToX(endTime) - newReservationItem.x;
-          newReservationItem.fill = 'green';
-          newReservationItem.opacity = '1.0';
           newReservationItem.takuNinzu = tableItem.takuNinzu;
           newReservationItem.shubetsu = tableItem.shubetsu;
           newReservationItem.takumei = tableItem.takumei;
@@ -123,13 +121,14 @@ angular.module('chartExampleApp')
           newReservationItem.label = '予約者名 ' + '100人';
           newReservationItems.push(newReservationItem);
         }
+
         return newReservationItems;
       },
       /**
        * 描画中のセル情報をクリアします。
        */
       "clearDrawingCellItem": function () {
-        this.drawingCellItem = angular.copy(_cellItem);
+        this.drawingCellItem = new CellItemModel();
       },
       /**
        * 新しいセル情報を生成します。
@@ -142,7 +141,7 @@ angular.module('chartExampleApp')
        */
       "createCellItem": function(offsetX, offsetY) {
 
-        var newCellItem = angular.copy(_cellItem);
+        var newCellItem = new CellItemModel();
         newCellItem.x = this.getDrawRectX(offsetX);
         newCellItem.y = this.getDrawRectY(offsetY);
         newCellItem.width = this.minuteWidth;
@@ -171,7 +170,7 @@ angular.module('chartExampleApp')
           targetCellItem.height = newRectHeight;
         }
         if (this.resizeMode) {
-          targetCellItem = this.ddCellItem;
+          targetCellItem = this.ddMovingCellItem;
         }
 
         if (targetCellItem == null) { return; }
@@ -189,8 +188,8 @@ angular.module('chartExampleApp')
        */
       "moveCellItem": function(offsetX, offsetY) {
         var targetCellItem = null;
-        if (this.ddMode) {
-          targetCellItem = this.ddCellItem;
+        if (this.isDragState) {
+          targetCellItem = this.ddMovingCellItem;
         }
 
         if (targetCellItem == null) { return; }
@@ -276,6 +275,93 @@ angular.module('chartExampleApp')
         minute += this.minuteWidth * this.hourSplitCount * hour;
 
         return minute;
+      },
+      /**
+       * マウス押下時の卓情報のインデックスを設定します。
+       *
+       * @param offsetY イベント発生時のY座標
+       *
+       */
+      "setMouseDownTableIndex": function(offsetY) {
+        this.mouseDownTableIndex = this.getYtoTableIndex(offsetY, Math.floor);
+      },
+      /**
+       * マウス開放時の卓情報のインデックスを設定します。
+       *
+       * @param offsetY イベント発生時のY座標
+       *
+       */
+      "setMouseUpTableIndex": function(offsetY) {
+        this.mouseUpTableIndex = this.getYtoTableIndex(offsetY, Math.ceil);
+        console.log('(offsetY - this.headerHeight)[' + (offsetY - this.headerHeight) +']');
+        console.log('mouseUpTableIndex[' + this.mouseUpTableIndex +']');
+      },
+      /**
+       * Y座標に値する卓情報のインデックスを取得します。
+       *
+       * @param offsetY 取得する卓情報のY座標
+       *
+       * @returns {number} 卓情報のインデックス
+       */
+      "getYtoTableIndex": function(offsetY, mathFunc) {
+        return mathFunc((offsetY - this.headerHeight) / this.reservationHeight);
+      },
+      /**
+       * Drag状態を解放します。
+       *
+       * @param reservationItems 予約情報
+       *
+       * @param chartWidth チャートの幅
+       *
+       * @param chartHeight チャートのたkさ
+       *
+       */
+      "releasesDragMode": function(reservationItems, chartWidth, chartHeight) {
+        if (this.isDragState) {
+
+          //var dropSuccess = true;
+          //
+          //if (this.ddMovingCellItem.isOutsideOfDropArea(this.tableCaptionWidth, chartWidth, this.headerHeight, chartHeight)) {
+          //
+          //}
+          //
+          //var _this = this;
+          //angular.forEach(reservationItems, function(reservationCellItem, index) {
+          //  if (_this.ddMovingCellItem.isOverlap(reservationCellItem)) {
+          //    dropSuccess = false;
+          //    return true;
+          //  }
+          //});
+
+          if (this.isIllegalDrop(reservationItems, chartWidth, chartHeight)) {
+          //if (dropSuccess) {
+            console.log('isIllegalDrop');
+            this.ddMovingCellItem.x = this.ddWaitingCellItem.x;
+            this.ddMovingCellItem.y = this.ddWaitingCellItem.y;
+          }
+          this.ddMovingCellItem.setThemeTemporaryReservation();
+          this.ddWaitingCellItem = new CellItemModel();
+          this.isDragState = false;
+
+        }
+      },
+      "isIllegalDrop": function(reservationItems, chartWidth, chartHeight) {
+
+        if (this.ddMovingCellItem.iIllegaDropArea(this.tableCaptionWidth, chartWidth, this.headerHeight, chartHeight)) {
+          return true;
+        }
+
+        var isOverlap = true;
+        var _this = this;
+        angular.forEach(reservationItems, function(reservationCellItem, index) {
+          if (_this.ddMovingCellItem.isOverlap(reservationCellItem)) {
+            isOverlap = false;
+            return true;
+          }
+        });
+
+        return isOverlap;
       }
+
     };
-  });
+  }]);

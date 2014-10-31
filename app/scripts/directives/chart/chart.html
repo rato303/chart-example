@@ -16,11 +16,24 @@
 		<g ng-mouseenter="enter($event)"
 		   ng-mouseleave="leave($event)">
 
+      <!-- Drag & Drop待機中予約情報START -->
+      <g>
+        <rect svg-x="{{chartModel.tableCaptionWidth + chartModel.ddWaitingCellItem.x}}"
+              svg-y="{{chartModel.ddWaitingCellItem.y}}"
+              svg-height="{{chartModel.ddWaitingCellItem.height}}"
+              svg-width="{{chartModel.ddWaitingCellItem.width}}"
+              fill="{{chartModel.ddWaitingCellItem.fill}}"
+              opacity="{{chartModel.ddWaitingCellItem.opacity}}"
+              rx="5" ry="5"
+              stroke-width="1" stroke="#000000"></rect>
+      </g>
+      <!-- Drag & Drop待機中予約情報END -->
+
 			<!-- 卓情報 START -->
 			<g>
 				<!-- 卓情報予約操作領域 START -->
 				<rect ng-repeat="tableItem in tableItems"
-              ng-mousedown="startSelect($event, tableItem)"
+              ng-mousedown="startSelect($event)"
               ng-mousemove="over($event, tableItem)"
 					  svg-x="{{chartModel.tableCaptionWidth}}" svg-y="{{tableItem.y}}"
 					  width="100%" svg-height="{{chartModel.reservationHeight}}"
@@ -31,25 +44,29 @@
 			<!-- 卓情報 END -->
 
 			<!-- 予約情報 START -->
-			<g ng-repeat="reservationItem in reservationItems">
-        <rect ng-mousedown="reservationMouseDown($event, $index, reservationItem)"
-              ng-mouseup="endSelect($event)"
-              ng-mousemove="reservationMouseMove($event, reservationItem)"
-              svg-x="{{chartModel.tableCaptionWidth + reservationItem.x}}"
-              svg-y="{{reservationItem.y}}"
-              svg-height="{{reservationItem.height}}"
-              svg-width="{{reservationItem.width}}"
-              fill="{{reservationItem.fill}}"
-              opacity="{{reservationItem.opacity}}"
-              rx="5" ry="5"
-              stroke-width="1" stroke="#000000"></rect>
-        <text svg-x="{{chartModel.tableCaptionWidth + reservationItem.x}}"
-              svg-y="{{reservationItem.y + 18}}"
-              font-family="Verdana" text-anchor="start"
-              font-size="11">
-          {{reservationItem.label}}
-        </text>
-			</g>
+      <g>
+        <g ng-repeat="reservationItem in reservationItems">
+          <rect ng-mousedown="reservationMouseDown($event, $index, reservationItem)"
+                ng-mouseup="endSelect($event)"
+                ng-mousemove="reservationMouseMove($event, reservationItem)"
+                svg-x="{{chartModel.tableCaptionWidth + reservationItem.x}}"
+                svg-y="{{reservationItem.y}}"
+                svg-height="{{reservationItem.height}}"
+                svg-width="{{reservationItem.width}}"
+                fill="{{reservationItem.fill}}"
+                opacity="{{reservationItem.opacity}}"
+                rx="5" ry="5"
+                stroke-width="1" stroke="#000000"></rect>
+          <text svg-x="{{chartModel.tableCaptionWidth + reservationItem.x}}"
+                svg-y="{{reservationItem.y + 18}}"
+                font-family="Verdana" text-anchor="start"
+                font-size="11"
+                svg-style="{{reservationItem.styles}}"
+                >
+            {{reservationItem.label}}
+          </text>
+        </g>
+      </g>
 			<!-- 予約情報 END -->
 
       <!-- 新規追加中予約情報 START -->
