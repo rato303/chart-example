@@ -84,23 +84,19 @@ angular.module('chartExampleApp')
     function isOverlap(cellItemModel) {
       var thisEndX = this.getEndX();
       var thatEndX = cellItemModel.getEndX();
+
       if (cellItemModel.$$hashKey == this.$$hashKey) {
         return false;
       }
+
       if (cellItemModel.y != this.y) {
         return false;
       }
+
       if (thisEndX <= cellItemModel.x || thatEndX <= this.x) {
         return false;
       }
-      /*
-      if (cellItemModel.x <= this.x && this.x < thatEndX) {
-        return true;
-      }
-      if (cellItemModel.x < thisEndX && thisEndX <= thatEndX) {
-        return true;
-      }
-      */
+
       return true;
     };
 
