@@ -269,7 +269,7 @@ angular.module('chartExampleApp')
      * @returns {string}
      */
     function xToTime(targetX) {
-      var minuteCount = targetX / this.minuteWidth;
+      var minuteCount = (targetX - this.tableCaptionWidth) / this.minuteWidth;
       var hour = Math.floor(minuteCount / this.hourSplitCount);
       var minute = minuteCount % this.hourSplitCount * this.minuteWidth;
       return ('00' + String(hour)).slice(-2) + ':' + ('00' + String(minute)).slice(-2);
@@ -287,7 +287,7 @@ angular.module('chartExampleApp')
       var hour = Number(timeArr[0]);
       var minute = Number(timeArr[1]);
 
-      minute += this.minuteWidth * this.hourSplitCount * hour;
+      minute += this.tableCaptionWidth + this.minuteWidth * this.hourSplitCount * hour;
 
       return minute;
     };
