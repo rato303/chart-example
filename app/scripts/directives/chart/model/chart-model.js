@@ -86,7 +86,7 @@ angular.module('chartExampleApp')
         });
       }
       return this;
-    };
+    }
 
     // TODO jsDoc
     function createDialogModel(event, tableItems) {
@@ -97,7 +97,7 @@ angular.module('chartExampleApp')
         'endTime': endTime,
         'newReservationItems': this.createReservationItems(startTime, endTime, tableItems)
       };
-    };
+    }
 
     /**
      * 仮予約情報を生成します。
@@ -132,14 +132,14 @@ angular.module('chartExampleApp')
       }
 
       return newReservationItems;
-    };
+    }
 
     /**
      * 描画中のセル情報をクリアします。
      */
     function clearDrawingCellItem() {
       this.drawingCellItem = new CellItemModel();
-    };
+    }
 
     /**
      * 新しいセル情報を生成します。
@@ -162,7 +162,7 @@ angular.module('chartExampleApp')
       newCellItem.startTime = this.getStartTime(offsetX);
 
       return newCellItem;
-    };
+    }
 
     /**
      * セル情報をリサイズします。
@@ -178,19 +178,19 @@ angular.module('chartExampleApp')
 
       if (this.drawMode) {
         targetCellItem = this.drawingCellItem;
-        var newRectHeight = (this.getDrawRectY(offsetY) + this.reservationHeight) - targetCellItem.y;
-        targetCellItem.height = newRectHeight;
+        targetCellItem.height = (this.getDrawRectY(offsetY) + this.reservationHeight) - targetCellItem.y;
       }
       if (this.resizeMode) {
         targetCellItem = this.ddMovingCellItem;
       }
 
-      if (targetCellItem == null) { return; }
+      if (targetCellItem == null) {
+        return;
+      }
 
-      var newRectWidth = (this.getDrawRectX(offsetX) + this.minuteWidth) - targetCellItem.x;
-      targetCellItem.width = newRectWidth;
+      targetCellItem.width = (this.getDrawRectX(offsetX) + this.minuteWidth) - targetCellItem.x;
 
-    };
+    }
 
     /**
      * セル情報を移動します。
@@ -212,7 +212,7 @@ angular.module('chartExampleApp')
       this.ddMovingCellItem.y = newY;
       this.ddStartItem.x = afterX;
       this.ddStartItem.y = afterY;
-    };
+    }
 
     /**
      * 描画を開始するX座標を取得します。
@@ -223,7 +223,7 @@ angular.module('chartExampleApp')
      */
     function getDrawRectX(offsetX) {
       return offsetX === 0 ? 0 : this.tableCaptionWidth + Math.floor((offsetX - this.tableCaptionWidth) / this.minuteWidth) * this.minuteWidth;
-    };
+    }
 
     /**
      * 描画を開始するY座標を取得します。
@@ -235,7 +235,7 @@ angular.module('chartExampleApp')
     function getDrawRectY(offsetY) {
       var absoluteY = offsetY - this.headerHeight;
       return absoluteY === 0 ? 0 : Math.floor(absoluteY / this.reservationHeight) * this.reservationHeight + this.headerHeight;
-    };
+    }
 
     /**
      * 選択開始時刻を取得します。
@@ -247,7 +247,7 @@ angular.module('chartExampleApp')
     function getStartTime(offsetX) {
       var startX = this.getDrawRectX(offsetX);
       return this.xToTime(startX);
-    };
+    }
 
     /**
      * 選択終了時刻を取得します。
@@ -259,7 +259,7 @@ angular.module('chartExampleApp')
     function getEndTime(offsetX) {
       var endX = this.minuteWidth + this.getDrawRectX(offsetX);
       return this.xToTime(endX);
-    };
+    }
 
     /**
      * X座標に位置する時刻を取得します。
@@ -273,7 +273,7 @@ angular.module('chartExampleApp')
       var hour = Math.floor(minuteCount / this.hourSplitCount);
       var minute = minuteCount % this.hourSplitCount * this.minuteWidth;
       return ('00' + String(hour)).slice(-2) + ':' + ('00' + String(minute)).slice(-2);
-    };
+    }
 
     /**
      * 時刻に位置するX座標を取得します。
@@ -290,7 +290,7 @@ angular.module('chartExampleApp')
       minute += this.tableCaptionWidth + this.minuteWidth * this.hourSplitCount * hour;
 
       return minute;
-    };
+    }
 
     /**
      * マウス押下時の卓情報のインデックスを設定します。
@@ -300,7 +300,7 @@ angular.module('chartExampleApp')
      */
     function setMouseDownTableIndex(index) {
       this.mouseDownTableIndex = index;
-    };
+    }
 
     /**
      * マウス開放時の卓情報のインデックスを設定します。
@@ -312,18 +312,20 @@ angular.module('chartExampleApp')
       this.mouseUpTableIndex = this.getYtoTableIndex(offsetY, Math.ceil);
       console.log('(offsetY - this.headerHeight)[' + (offsetY - this.headerHeight) +']');
       console.log('mouseUpTableIndex[' + this.mouseUpTableIndex +']');
-    };
+    }
 
     /**
      * Y座標に値する卓情報のインデックスを取得します。
      *
      * @param offsetY 取得する卓情報のY座標
      *
+     * @param mathFunc 丸め用関数
+     *
      * @returns {number} 卓情報のインデックス
      */
     function getYtoTableIndex(offsetY, mathFunc) {
       return mathFunc((offsetY - this.headerHeight) / this.reservationHeight);
-    };
+    }
 
     /**
      * Drag状態を解放します。
@@ -339,7 +341,7 @@ angular.module('chartExampleApp')
 
       if (this.isDragState) {
 
-        if (this.isIllegalDrop(reservationItems, chartWidth, chartHeight)) {
+        if (this.isIllegalDrop(this.ddMovingCellItem, reservationItems, chartWidth, chartHeight)) {
           this.ddMovingCellItem.x = this.ddWaitingCellItem.x;
           this.ddMovingCellItem.y = this.ddWaitingCellItem.y;
         }
@@ -350,26 +352,42 @@ angular.module('chartExampleApp')
 
       }
 
-    };
+    }
 
     // TODO jsDoc
-    function isIllegalDrop(reservationItems, chartWidth, chartHeight) {
+    function isIllegalDrop(targetItem, reservationItems, chartWidth, chartHeight) {
 
       if (this.ddMovingCellItem.iIllegaDropArea(this.tableCaptionWidth, chartWidth, this.headerHeight, chartHeight)) {
         return true;
       }
 
+      return this.isReservationItemOverlap(targetItem, reservationItems);
+    }
+
+    // TODO jsDoc
+    function isReservationItemOverlap(targetItem, reservationItems) {
       var isOverlap = false;
-      var _this = this;
-      angular.forEach(reservationItems, function (reservationCellItem, index) {
-        if (_this.ddMovingCellItem.isOverlap(reservationCellItem)) {
+      angular.forEach(reservationItems, function (reservationCellItem) {
+        if (targetItem.isOverlap(reservationCellItem, true)) {
           isOverlap = true;
           return true;
         }
       });
 
       return isOverlap;
-    };
+    }
+
+    function isNewReservationItemsOverlapExistingReservationItems(newReservationItems, existingReservationItems) {
+      var isOverlap = false;
+      var _this = this;
+      angular.forEach(newReservationItems, function(newReservationItem) {
+        if (_this.isReservationItemOverlap(newReservationItem, existingReservationItems)) {
+          isOverlap = true;
+          return true;
+        }
+      });
+      return isOverlap;
+    }
 
     return {
       "headerLabelY": headerLabelY,
@@ -409,7 +427,9 @@ angular.module('chartExampleApp')
       "setMouseUpTableIndex": setMouseUpTableIndex,
       "getYtoTableIndex": getYtoTableIndex,
       "releasesDragMode": releasesDragMode,
-      "isIllegalDrop": isIllegalDrop
+      "isIllegalDrop": isIllegalDrop,
+      "isReservationItemOverlap": isReservationItemOverlap,
+      "isNewReservationItemsOverlapExistingReservationItems": isNewReservationItemsOverlapExistingReservationItems
     };
 
   }]);

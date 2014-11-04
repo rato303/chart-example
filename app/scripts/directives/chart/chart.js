@@ -35,15 +35,21 @@ angular.module('chartExampleApp')
       $scope.chartMouseUp = function(event) {
         console.log('chartMouseUp');
         if ($scope.chartModel.drawMode) {
-          $scope.chartModel.drawMode = false;
+
           $scope.chartModel.setMouseUpTableIndex(event.offsetY);
+          var dialogModel = $scope.chartModel.createDialogModel(event, $scope.tableItems);
+
+          if ($scope.chartModel.isNewReservationItemsOverlapExistingReservationItems(dialogModel.newReservationItems, $scope.reservationItems)) {
+            alert('out!!!');
+            return;
+          }
 
           $scope.modalInstance = $modal.open({
             controller: 'ReservationDialogCtrl',
             templateUrl: 'scripts/directives/chart/components/dialog/reservation-dialog.html',
             resolve: {
               dialogModel: function() {
-                return $scope.chartModel.createDialogModel(event, $scope.tableItems);
+                return dialogModel;
               }
             }
           });
@@ -56,6 +62,8 @@ angular.module('chartExampleApp')
             console.log('キャンセル');
             $scope.chartModel.clearDrawingCellItem();
           });
+
+          $scope.chartModel.drawMode = false;
 
         }
         $scope.chartModel.releasesDragMode($scope.reservationItems, $scope.chartWidth, $scope.chartHeight);

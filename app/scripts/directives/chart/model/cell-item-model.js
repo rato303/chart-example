@@ -80,8 +80,10 @@ angular.module('chartExampleApp')
      * セルが重なっているか判定します。
      *
      * @param cellItemModel 重なっているか判定する対象のセル情報
+     *
+     * @param 同じ高さにあるものを判定対象としない
      */
-    function isOverlap(cellItemModel) {
+    function isOverlap(cellItemModel, excludeEqualsY) {
       var thisEndX = this.getEndX();
       var thatEndX = cellItemModel.getEndX();
 
@@ -89,8 +91,10 @@ angular.module('chartExampleApp')
         return false;
       }
 
-      if (cellItemModel.y != this.y) {
-        return false;
+      if (excludeEqualsY) {
+        if (cellItemModel.y != this.y) {
+          return false;
+        }
       }
 
       if (thisEndX <= cellItemModel.x || thatEndX <= this.x) {
